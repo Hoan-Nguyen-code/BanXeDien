@@ -73,7 +73,7 @@ export default function Register() {
           <div className="content">
             <i className="fas fa-charging-station"></i>
 
-            <h1>WebGIS Xe Điện</h1>
+            <h1>ECO-BIKE</h1>
 
             <p>Hệ thống bán xe điện và tìm kiếm trạm sạc thông minh</p>
 

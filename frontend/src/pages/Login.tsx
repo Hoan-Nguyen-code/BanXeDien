@@ -29,11 +29,20 @@ export default function Login() {
 
       alert(response.data.message);
 
-      // Lưu user vào localStorage
-      localStorage.setItem("user", JSON.stringify(response.data.user));
+      const user = response.data.user;
 
-      // Chuyển về trang chủ
-      window.location.href = "/";
+      // Lưu user vào localStorage
+      localStorage.setItem("user", JSON.stringify(user));
+
+      // ADMIN
+      if (user.role === "ADMIN" || user.is_superuser) {
+        window.location.href = "/admin/dashboard";
+      }
+
+      // USER THƯỜNG
+      else {
+        window.location.href = "/";
+      }
     } catch (error: any) {
       console.log(error.response?.data);
 
@@ -61,7 +70,7 @@ export default function Login() {
           <div className="content">
             <i className="fas fa-charging-station"></i>
 
-            <h1>WebGIS Xe Điện</h1>
+            <h1>ECO-BIKE</h1>
 
             <p>Hệ thống bán xe điện và tìm kiếm trạm sạc thông minh</p>
 
