@@ -26,6 +26,7 @@ class LoginAPI(APIView):
             # Ghi nhớ đăng nhập
             if not remember:
                 request.session.set_expiry(0)
+
             else:
                 request.session.set_expiry(1209600)
 
@@ -33,13 +34,21 @@ class LoginAPI(APIView):
                 {
                     "success": True,
                     "message": f"Chào mừng {user.username}!",
+
                     "user": {
                         "id": user.id,
                         "username": user.username,
                         "email": user.email,
+
+                        # ROLE
                         "role": user.role,
+
+                        # DJANGO ADMIN
+                        "is_superuser": user.is_superuser,
+                        "is_staff": user.is_staff,
                     },
                 },
+
                 status=status.HTTP_200_OK,
             )
 
@@ -48,6 +57,7 @@ class LoginAPI(APIView):
                 "success": False,
                 "errors": serializer.errors,
             },
+
             status=status.HTTP_400_BAD_REQUEST,
         )
 
@@ -66,13 +76,19 @@ class RegisterAPI(APIView):
                 {
                     "success": True,
                     "message": "Đăng ký thành công!",
+
                     "user": {
                         "id": user.id,
                         "username": user.username,
                         "email": user.email,
+
                         "role": user.role,
+
+                        "is_superuser": user.is_superuser,
+                        "is_staff": user.is_staff,
                     },
                 },
+
                 status=status.HTTP_201_CREATED,
             )
 
@@ -81,6 +97,7 @@ class RegisterAPI(APIView):
                 "success": False,
                 "errors": serializer.errors,
             },
+
             status=status.HTTP_400_BAD_REQUEST,
         )
 
@@ -96,5 +113,6 @@ class LogoutAPI(APIView):
                 "success": True,
                 "message": "Đăng xuất thành công!",
             },
+
             status=status.HTTP_200_OK,
         )

@@ -29,7 +29,7 @@ export default function Header() {
         {/* LOGO */}
         <Link to="/" className="logo">
           <h2>
-            <i className="fas fa-bolt"></i> WebGIS XE ĐIỆN
+            <i className="fas fa-bolt"></i> ECO-BIKE
           </h2>
         </Link>
 
