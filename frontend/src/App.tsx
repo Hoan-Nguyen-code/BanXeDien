@@ -8,6 +8,9 @@ import Register from "./pages/Register";
 import News from "./pages/News";
 import Admin_dashboard from "./pages/admin/Admin_dashboard";
 import Admin_orders from "./pages/admin/Admin_orders";
+import ForgetPassword from "./pages/ForgetPassword";
+import PasswordResetEmail from "./pages/PasswordResetEmail";
+import PasswordResetForm from "./pages/PasswordResetForm";
 
 function App() {
   return (
@@ -46,6 +49,21 @@ function App() {
               }}
               statusFilter=""
               adminName="Admin"
+            />
+          }
+        />
+
+        <Route path="/forget-password" element={<ForgetPassword />} />
+        <Route
+          path="/reset-password/:uidb64/:token"
+          element={<PasswordResetForm />}
+        />
+        <Route
+          path="/password-reset-email"
+          element={
+            <PasswordResetEmail
+              username="admin"
+              resetLink="http://localhost:5173/reset-password/demo/demo"
             />
           }
         />

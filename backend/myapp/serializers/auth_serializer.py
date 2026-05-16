@@ -1,5 +1,10 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
+
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth.password_validation import validate_password
+from django.utils.http import urlsafe_base64_decode
+
 from myapp.models import User
 
 
@@ -90,5 +95,50 @@ class RegisterSerializer(serializers.ModelSerializer):
             role=User.Role.CUSTOMER,
             **validated_data
         )
+
+class ForgetPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        if not User.objects.filter(email=value).exists():
+            raise serializers.ValidationError(
+                "Email không tồn tại trong hệ thống!"
+            )
+        return value
+
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    new_password = serializers.CharField(write_only=True)
+    confirm_password = serializers.CharField(write_only=True)
+
+    def validate(self, attrs):
+        new_password = attrs.get("new_password")
+        confirm_password = attrs.get("confirm_password")
+
+        if new_password != confirm_password:
+            raise serializers.ValidationError(
+                "Mật khẩu xác nhận không khớp!"
+            )
+
+        validate_password(new_password)
+
+        return attrs
+
+    def save(self, uidb64, token):
+        try:
+            uid = urlsafe_base64_decode(uidb64).decode()
+            user = User.objects.get(pk=uid)
+        except Exception:
+            raise serializers.ValidationError(
+                "Liên kết không hợp lệ!"
+            )
+
+        if not default_token_generator.check_token(user, token):
+            raise serializers.ValidationError(
+                "Liên kết đã hết hạn hoặc không hợp lệ!"
+            )
+
+        user.set_password(self.validated_data["new_password"])
+        user.save()
 
         return user

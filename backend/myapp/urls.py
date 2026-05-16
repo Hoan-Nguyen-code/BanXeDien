@@ -2,7 +2,7 @@ from django.urls import path
 from myapp.api import (home_api, product_api, news_api)
 from myapp.api.auth_api import (LoginAPI, RegisterAPI, LogoutAPI)
 from myapp.api.admin_api import (admin_dashboard_api, admin_users_api, admin_products_api, admin_orders_api, admin_stations_api)
-
+from myapp.api.auth_api import (ForgetPasswordAPIView, PasswordResetConfirmAPIView)
 urlpatterns = [
     # HOME
     path("home/", home_api.home_api),
@@ -24,4 +24,9 @@ urlpatterns = [
 
     # NEWS
     path("news/", news_api.get_news, name="api_news"),
+
+    #ForgetPassword
+    path("forget-password/", ForgetPasswordAPIView.as_view(), name="forget-password"),
+
+    path("reset-password/<uidb64>/<token>/", PasswordResetConfirmAPIView.as_view(), name="reset-password"),
 ]
