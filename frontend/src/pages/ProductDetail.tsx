@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import api from "../services/api";
+import MainLayout from "../layouts/MainLayout";
 
 import "../assets/css/product_detail.css";
 
@@ -9,19 +10,30 @@ export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
 
   const [product, setProduct] = useState<any>(null);
-
   const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
 
   useEffect(() => {
     fetchProduct();
   }, [id]);
 
+  // ===== GET STATIC IMAGE FROM FRONTEND =====
+  const getImage = (imagePath: string) => {
+    if (!imagePath) {
+      return "https://via.placeholder.com/400x300";
+    }
+
+    // lấy tên file cuối cùng
+    const fileName = imagePath.split("/").pop();
+
+    return new URL(`../assets/images/products/${fileName}`, import.meta.url)
+      .href;
+  };
+
   const fetchProduct = async () => {
     try {
       const response = await api.get(`products/${Number(id)}/`);
 
       setProduct(response.data.product);
-
       setRelatedProducts(response.data.related_products);
     } catch (error) {
       console.error(error);
@@ -33,25 +45,20 @@ export default function ProductDetail() {
   }
 
   return (
-    <>
+    <MainLayout>
       {/* BACK BUTTON */}
-      <Link to="/" className="back-home-btn">
-        ← Quay về trang chủ
-      </Link>
+      <div className="back-wrapper">
+        <Link to="/" className="back-home-btn">
+          ← Quay về trang chủ
+        </Link>
+      </div>
 
       <div className="product-detail-container">
         {/* ================= MAIN PRODUCT ================= */}
         <div className="product-main">
           {/* IMAGE */}
           <div className="product-image">
-            <img
-              src={
-                product.image
-                  ? product.image
-                  : "https://via.placeholder.com/400x300"
-              }
-              alt={product.name}
-            />
+            <img src={getImage(product.image)} alt={product.name} />
           </div>
 
           {/* INFO */}
@@ -89,12 +96,7 @@ export default function ProductDetail() {
             {relatedProducts.map((p: any) => (
               <div className="related-product-card" key={p.id}>
                 <div className="related-img">
-                  <img
-                    src={
-                      p.image ? p.image : "https://via.placeholder.com/300x200"
-                    }
-                    alt={p.name}
-                  />
+                  <img src={getImage(p.image)} alt={p.name} />
                 </div>
 
                 <div className="related-info">
@@ -113,6 +115,6 @@ export default function ProductDetail() {
           </div>
         </div>
       </div>
-    </>
+    </MainLayout>
   );
 }
