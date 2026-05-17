@@ -288,6 +288,8 @@
   font-size: 15px;
   transition: all 0.3s ease;
   background: #f8f9fa;
+  color: #0f172a;
+  font-weight: 500;
 }
 
 .form-group input:focus {
