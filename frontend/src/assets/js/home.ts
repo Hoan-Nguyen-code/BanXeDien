@@ -1,3 +1,5 @@
+import api from "../../services/api";
+
 declare global {
   interface Window {
     addToCartInitialized?: boolean;
@@ -76,9 +78,9 @@ export default function initHome(): void {
 
   const cartCountElement = document.getElementById("cart-count");
 
-  // tránh add event nhiều lần
-  if (!window.addToCartInitialized) {
-    document.addEventListener("click", function (e: Event) {
+  // tránh init nhiều lần
+  if (!(window as any).__addToCartInitialized) {
+    document.addEventListener("click", async (e: Event) => {
       const target = e.target as HTMLElement;
 
       const button = target.closest(".add-to-cart-btn") as HTMLElement | null;
@@ -91,39 +93,60 @@ export default function initHome(): void {
 
       button.classList.add("loading");
 
-      const url = button.getAttribute("data-url");
+      try {
+        // lấy productId từ data attribute (nếu có)
+        const productId =
+          button.getAttribute("data-product-id") ||
+          button.getAttribute("data-id");
 
-      if (!url) return;
+        if (!productId) return;
 
-      fetch(url)
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.success) {
-            showNotification("Đã thêm sản phẩm vào giỏ hàng 😍", "success");
+        const response = await api.post(`/add-to-cart/${productId}/`);
 
-            if (cartCountElement) {
-              cartCountElement.textContent = data.cart_count;
-            }
-
-            if (window.location.pathname.includes("cart")) {
-              setTimeout(() => {
-                window.location.reload();
-              }, 800);
-            }
-          } else if (data.error === "login_required") {
-            showNotification("Vui lòng đăng nhập", "warning");
-
-            window.location.href = "/login/";
+        if (response.data.success) {
+          // notification
+          if ((window as any).showNotification) {
+            (window as any).showNotification(
+              "Đã thêm sản phẩm vào giỏ hàng 😍",
+              "success",
+            );
+          } else {
+            alert("Đã thêm sản phẩm vào giỏ hàng 😍");
           }
-        })
-        .finally(() => {
-          setTimeout(() => {
-            button.classList.remove("loading");
-          }, 500);
-        });
+
+          // update cart count
+          if (
+            cartCountElement &&
+            response.data.data?.cart_count !== undefined
+          ) {
+            cartCountElement.textContent =
+              response.data.data.cart_count.toString();
+          }
+
+          // reload cart page nếu đang ở cart
+          if (window.location.pathname.includes("cart")) {
+            setTimeout(() => {
+              window.location.reload();
+            }, 500);
+          }
+        }
+      } catch (error: any) {
+        console.log(error?.response?.data);
+
+        if (error.response?.status === 401) {
+          alert("Vui lòng đăng nhập");
+          window.location.href = "/login";
+        } else {
+          alert("Có lỗi xảy ra");
+        }
+      } finally {
+        setTimeout(() => {
+          button.classList.remove("loading");
+        }, 300);
+      }
     });
 
-    window.addToCartInitialized = true;
+    (window as any).__addToCartInitialized = true;
   }
 
   // view mode

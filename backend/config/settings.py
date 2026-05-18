@@ -52,16 +52,18 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    #'django.middleware.csrf.CsrfViewMiddleware',#
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
+CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
 ]
-
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+]
 ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [
@@ -147,3 +149,22 @@ SITE_URL = 'http://localhost:8000'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 CKEDITOR_UPLOAD_PATH = "uploads/"
+
+# =========================
+# COOKIE / SESSION FIX
+# =========================
+
+SESSION_COOKIE_SAMESITE = "Lax"
+#CSRF_COOKIE_SAMESITE = "Lax"
+
+SESSION_COOKIE_SECURE = False
+#CSRF_COOKIE_SECURE = False
+
+# ==========================================
+# DJANGO REST FRAMEWORK AUTHENTICATION
+# ==========================================
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication', # <--- Đọc cookie sessionid và csrftoken tại đây
+    ],
+}
