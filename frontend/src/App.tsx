@@ -11,6 +11,10 @@ import Admin_orders from "./pages/admin/Admin_orders";
 import ForgetPassword from "./pages/ForgetPassword";
 import PasswordResetEmail from "./pages/PasswordResetEmail";
 import PasswordResetForm from "./pages/PasswordResetForm";
+import Cart from "./pages/Cart";
+import Checkout from "./pages/Checkout";
+import Qr from "./pages/Qr";
+import Success from "./pages/Success";
 
 function App() {
   return (
@@ -29,6 +33,14 @@ function App() {
         <Route path="/news" element={<News />} />
 
         <Route path="/admin/dashboard" element={<Admin_dashboard />} />
+
+        <Route path="/cart" element={<Cart />} />
+
+        <Route path="/checkout" element={<Checkout />} />
+
+        <Route path="/qr" element={<Qr />} />
+
+        <Route path="/success" element={<Success />} />
 
         <Route
           path="/admin/orders"

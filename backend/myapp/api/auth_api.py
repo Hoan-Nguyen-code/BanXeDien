@@ -3,7 +3,8 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from django.contrib.auth import login, logout
-
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
@@ -112,20 +113,22 @@ class RegisterAPI(APIView):
         )
 
 
+# Đảm bảo miễn trừ kiểm tra CSRF hoàn toàn cho class này
+@method_decorator(csrf_exempt, name='dispatch')
 class LogoutAPI(APIView):
+    # Cho phép bất kỳ ai (kể cả phiên lỗi) gọi vào để xóa hoàn toàn session
+    permission_classes = [] 
 
     def post(self, request):
-
+        # 1. Thực hiện đăng xuất hủy session trên Server
         logout(request)
-
-        return Response(
-            {
-                "success": True,
-                "message": "Đăng xuất thành công!",
-            },
-
-            status=status.HTTP_200_OK,
-        )
+        
+        # 2. Xóa thủ công session trong cookie nếu còn sót lại
+        response = Response({"detail": "Đăng xuất thành công"}, status=status.HTTP_200_OK)
+        if 'sessionid' in request.COOKIES:
+            response.delete_cookie('sessionid')
+            
+        return response
 class ForgetPasswordAPIView(APIView):
 
     def post(self, request):

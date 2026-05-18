@@ -23,6 +23,7 @@ import bike5 from "../assets/images/products/bike5.jpg";
 import bike6 from "../assets/images/products/bike6.jpg";
 import car1 from "../assets/images/products/car1.jpg";
 import accessory1 from "../assets/images/products/accessory1.jpg";
+import { handleAddToCart } from "../assets/js/productdetail.ts";
 
 export default function Home() {
   const [products, setProducts] = useState<any[]>([]);
@@ -254,7 +255,11 @@ export default function Home() {
                         {Number(product.price).toLocaleString("vi-VN")}đ
                       </div>
 
-                      <button className="add-btn" type="button">
+                      <button
+                        className="add-btn add-to-cart-btn"
+                        type="button"
+                        onClick={() => handleAddToCart(product.id)}
+                      >
                         <i className="fas fa-shopping-cart"></i>
                         Thêm vào giỏ
                       </button>

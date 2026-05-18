@@ -5,6 +5,7 @@ import api from "../services/api";
 import MainLayout from "../layouts/MainLayout";
 
 import "../assets/css/product_detail.css";
+import { handleAddToCart } from "../assets/js/productdetail";
 
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
@@ -81,8 +82,12 @@ export default function ProductDetail() {
             />
 
             <div className="product-actions">
-              <button className="add-btn">
-                <i className="fas fa-shopping-cart"></i> Thêm vào giỏ ngay!
+              <button
+                className="add-btn"
+                onClick={() => handleAddToCart(product.id)}
+              >
+                <i className="fas fa-shopping-cart"></i>
+                Thêm vào giỏ ngay!
               </button>
             </div>
           </div>
