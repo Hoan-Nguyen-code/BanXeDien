@@ -5,8 +5,8 @@ const api = axios.create({
   // BẮT BUỘC: Cho phép gửi và nhận cookie giữa React và Django
   withCredentials: true,
   // Tự động lấy token từ cookie có tên 'csrftoken' và gắn vào Header 'X-CSRFToken'
-  //xsrfCookieName: "csrftoken",//
-  //xsrfHeaderName: "X-CSRFToken",//
+  xsrfCookieName: "csrftoken",
+  xsrfHeaderName: "X-CSRFToken",
 });
 
 export default api;

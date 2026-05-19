@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 
-import api from "../services/api";
+import api from "../../services/api";
 
-import "../assets/css/base.css";
-import "../assets/css/login.css";
+import "../../assets/css/login.css";
 
 const ForgetPassword: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -32,9 +31,26 @@ const ForgetPassword: React.FC = () => {
           <div className="content">
             <i className="fas fa-charging-station"></i>
 
-            <h1>WebGIS Xe Điện</h1>
+            <h1>ECO-BIKE</h1>
 
             <p>Hệ thống bán xe điện và tìm kiếm trạm sạc thông minh</p>
+
+            <div className="features">
+              <div className="feature-item">
+                <i className="fas fa-car-battery"></i>
+                <span>Xe điện chất lượng</span>
+              </div>
+
+              <div className="feature-item">
+                <i className="fas fa-map-marked-alt"></i>
+                <span>Bản đồ trạm sạc</span>
+              </div>
+
+              <div className="feature-item">
+                <i className="fas fa-bolt"></i>
+                <span>Sạc nhanh tiện lợi</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -82,7 +98,7 @@ const ForgetPassword: React.FC = () => {
           <div className="back-to-login-link">
             <p>
               Đã nhớ mật khẩu?
-              <a href="/login">Đăng nhập ngay</a>
+              <a href="/login"> Đăng nhập ngay </a>
             </p>
           </div>
         </div>

@@ -3,18 +3,19 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import ProductDetail from "./pages/ProductDetail";
 import Info from "./pages/Info";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
+import Login from "./pages/authentication/Login";
+import Register from "./pages/authentication/Register";
 import News from "./pages/News";
 import Admin_dashboard from "./pages/admin/Admin_dashboard";
 import Admin_orders from "./pages/admin/Admin_orders";
-import ForgetPassword from "./pages/ForgetPassword";
-import PasswordResetEmail from "./pages/PasswordResetEmail";
-import PasswordResetForm from "./pages/PasswordResetForm";
-import Cart from "./pages/Cart";
-import Checkout from "./pages/Checkout";
-import Qr from "./pages/Qr";
-import Success from "./pages/Success";
+import ForgetPassword from "./pages/authentication/ForgetPassword";
+import PasswordResetEmail from "./pages/authentication/PasswordResetEmail";
+import PasswordResetForm from "./pages/authentication/PasswordResetForm";
+import Cart from "./pages/payment/Cart";
+import Checkout from "./pages/payment/Checkout";
+import Qr from "./pages/payment/Qr";
+import Success from "./pages/payment/Success";
+import Map from "./pages/map/Map";
 
 function App() {
   return (
@@ -41,6 +42,8 @@ function App() {
         <Route path="/qr" element={<Qr />} />
 
         <Route path="/success" element={<Success />} />
+
+        <Route path="/map" element={<Map />} />
 
         <Route
           path="/admin/orders"
