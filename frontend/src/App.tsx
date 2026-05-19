@@ -1,3 +1,5 @@
+// src/App.tsx
+
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Home from "./pages/Home";
@@ -8,6 +10,7 @@ import Register from "./pages/authentication/Register";
 import News from "./pages/News";
 import Admin_dashboard from "./pages/admin/Admin_dashboard";
 import Admin_orders from "./pages/admin/Admin_orders";
+
 import ForgetPassword from "./pages/authentication/ForgetPassword";
 import PasswordResetEmail from "./pages/authentication/PasswordResetEmail";
 import PasswordResetForm from "./pages/authentication/PasswordResetForm";
@@ -16,6 +19,11 @@ import Checkout from "./pages/payment/Checkout";
 import Qr from "./pages/payment/Qr";
 import Success from "./pages/payment/Success";
 import Map from "./pages/map/Map";
+
+import { Admin_Users } from "./pages/admin/Admin_Users";
+import { Admin_Kho } from "./pages/admin/Admin_Kho";
+import { Admin_Tai_Chinh } from "./pages/admin/Admin_Tai_Chinh";
+import { Admin_Stations } from "./pages/admin/Admin_Stations";
 
 function App() {
   return (
@@ -68,6 +76,18 @@ function App() {
           }
         />
 
+        {/* TUYẾN ĐƯỜNG QUẢN LÝ THÀNH VIÊN */}
+        <Route path="/admin/users" element={<Admin_Users />} />
+
+        {/* TUYẾN ĐƯỜNG QUẢN LÝ KHO HÀNG */}
+        <Route path="/admin/kho" element={<Admin_Kho />} />
+
+        {/* TUYẾN ĐƯỜNG QUẢN LÝ TRẠM SẠC */}
+        <Route path="/admin/tramsac" element={<Admin_Stations />} />
+
+        {/* ✅ ĐÃ THÊM: TUYẾN ĐƯỜNG BÁO CÁO TÀI CHÍNH */}
+        <Route path="/admin/taichinh" element={<Admin_Tai_Chinh />} />
+
         <Route path="/forget-password" element={<ForgetPassword />} />
         <Route
           path="/reset-password/:uidb64/:token"
@@ -86,5 +106,4 @@ function App() {
     </BrowserRouter>
   );
 }
-
 export default App;
