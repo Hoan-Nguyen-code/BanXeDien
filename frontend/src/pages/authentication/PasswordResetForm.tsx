@@ -2,7 +2,7 @@ import React, { useState } from "react";
 
 import { Link, useNavigate, useParams } from "react-router-dom";
 
-import api from "../services/api";
+import api from "../../services/api";
 
 interface Message {
   type: "success" | "error" | "info" | "warning";
@@ -68,7 +68,7 @@ const PasswordResetForm: React.FC = () => {
           <div className="content">
             <i className="fas fa-charging-station"></i>
 
-            <h1>WebGIS Xe Điện</h1>
+            <h1>ECO-BIKE</h1>
 
             <p>Hệ thống bán xe điện và tìm kiếm trạm sạc thông minh</p>
           </div>

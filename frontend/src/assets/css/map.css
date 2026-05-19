@@ -1,0 +1,405 @@
+/* =========================
+   EV MAP PAGE
+========================= */
+
+.ev-map-page {
+  position: fixed;
+
+  top: 0;
+  left: 0;
+
+  width: 100vw;
+  height: 100vh;
+
+  display: flex;
+
+  overflow: hidden;
+
+  background: #0b1120;
+
+  z-index: 9999;
+}
+
+/* =========================
+   SIDEBAR
+========================= */
+
+#evSidebar {
+  width: 320px;
+  min-width: 320px;
+  max-width: 320px;
+
+  height: 100vh;
+
+  overflow-y: auto;
+
+  padding: 18px;
+
+  background: #111827;
+  border-right: 1px solid #1f2937;
+
+  color: #ffffff;
+
+  box-sizing: border-box;
+}
+
+#evSidebar::-webkit-scrollbar {
+  width: 5px;
+}
+
+#evSidebar::-webkit-scrollbar-thumb {
+  background: #374151;
+  border-radius: 20px;
+}
+
+#evSidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.ev-sidebar-header {
+  margin-bottom: 18px;
+}
+
+.ev-tag {
+  display: inline-flex;
+  align-items: center;
+
+  padding: 5px 10px;
+  margin-bottom: 14px;
+
+  border-radius: 999px;
+
+  background: rgba(0, 212, 255, 0.1);
+  border: 1px solid rgba(0, 212, 255, 0.3);
+
+  color: #00d4ff;
+
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.ev-sidebar-title {
+  margin: 0;
+
+  line-height: 1.3;
+
+  font-size: 24px;
+  font-weight: 800;
+
+  color: #ffffff;
+}
+
+/* =========================
+   SIDEBAR BUTTON
+========================= */
+
+.ev-sidebar-btn {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-top: 12px;
+  padding: 12px 14px;
+
+  border-radius: 12px;
+
+  text-decoration: none;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  transition: 0.25s ease;
+}
+
+.ev-sidebar-btn:hover {
+  transform: translateY(-2px);
+}
+
+.ev-sidebar-btn-search {
+  background: linear-gradient(135deg, #00d4ff, #0099ff);
+
+  color: #ffffff;
+}
+
+.ev-sidebar-btn-dashboard {
+  background: #1f2937;
+  border: 1px solid #374151;
+
+  color: #e5e7eb;
+}
+
+/* =========================
+   SECTION
+========================= */
+
+.ev-section {
+  margin-bottom: 16px;
+  padding: 15px;
+
+  border-radius: 16px;
+
+  background: #151c2c;
+  border: 1px solid #1f2937;
+}
+
+.ev-section-title {
+  margin-bottom: 12px;
+
+  color: #ffffff;
+
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* =========================
+   BUTTON
+========================= */
+
+.ev-btn {
+  width: 100%;
+
+  border: none;
+  outline: none;
+
+  padding: 12px 14px;
+
+  border-radius: 10px;
+
+  cursor: pointer;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  transition: 0.25s ease;
+}
+
+.ev-btn:hover {
+  transform: translateY(-1px);
+  opacity: 0.95;
+}
+
+.ev-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ev-btn-primary {
+  background: linear-gradient(135deg, #00d4ff, #0099ff);
+
+  color: #ffffff;
+}
+
+.ev-btn-sm {
+  background: #1f2937;
+  border: 1px solid #374151;
+
+  color: #f9fafb;
+}
+
+/* =========================
+   TEXT
+========================= */
+
+.ev-small-text {
+  margin-top: 8px;
+
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+/* =========================
+   RANGE
+========================= */
+
+.ev-radius-wrapper {
+  margin-top: 12px;
+}
+
+.ev-radius-wrapper label {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: #d1d5db;
+  font-size: 12px;
+}
+
+.ev-slider-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#evRadiusSlider {
+  flex: 1;
+
+  accent-color: #00d4ff;
+}
+
+.ev-slider-val {
+  min-width: 55px;
+
+  color: #00d4ff;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* =========================
+   EMPTY
+========================= */
+
+.ev-empty {
+  padding: 14px;
+
+  border-radius: 12px;
+
+  background: #0f172a;
+
+  text-align: center;
+
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+.ev-empty-icon {
+  margin-bottom: 6px;
+
+  font-size: 22px;
+}
+
+/* =========================
+   STATUS
+========================= */
+
+.ev-status-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  padding-top: 12px;
+}
+
+#evStatusText {
+  color: #d1d5db;
+
+  font-size: 12px;
+}
+
+/* =========================
+   DOT PULSE
+========================= */
+
+.ev-dot-pulse {
+  width: 8px;
+  height: 8px;
+
+  border-radius: 50%;
+
+  background: #00d4ff;
+
+  animation: evPulse 1.2s infinite;
+}
+
+@keyframes evPulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.6);
+    opacity: 0.5;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* =========================
+   LEGEND
+========================= */
+
+.ev-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  margin-bottom: 10px;
+
+  color: #d1d5db;
+  font-size: 11px;
+}
+
+.ev-legend-line {
+  width: 36px;
+
+  border-radius: 999px;
+}
+
+.ev-legend-line-1 {
+  height: 4px;
+  background: #00d4ff;
+}
+
+.ev-legend-line-2 {
+  border-top: 3px dashed #ff6b35;
+}
+
+.ev-legend-dot {
+  width: 10px;
+  height: 10px;
+
+  border-radius: 50%;
+}
+
+.ev-legend-user {
+  background: #ef4444;
+}
+
+.ev-legend-station {
+  background: #22c55e;
+}
+
+/* =========================
+   MAP
+========================= */
+
+#evMap,
+.ev-map-container {
+  flex: 1;
+
+  width: 100%;
+  height: 100%;
+
+  position: relative;
+}
+
+/* =========================
+   LEAFLET
+========================= */
+
+.ev-map-page .leaflet-container {
+  width: 100%;
+  height: 100%;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 12px;
+
+  background: #111827;
+
+  color: #ffffff;
+}
+
+.leaflet-popup-tip {
+  background: #111827;
+}

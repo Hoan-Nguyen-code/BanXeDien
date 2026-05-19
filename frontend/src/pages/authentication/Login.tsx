@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
-import api from "../services/api";
+import api from "../../services/api";
 
-import "../assets/css/base.css";
-import "../assets/css/login.css";
+import "../../assets/css/login.css";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -21,6 +20,8 @@ export default function Login() {
     e.preventDefault();
 
     try {
+      await api.get("csrf/");
+
       const response = await api.post("login/", {
         username,
         password,

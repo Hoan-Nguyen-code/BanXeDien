@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-
+from rest_framework.authentication import SessionAuthentication
 from django.contrib.auth import login, logout
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
@@ -20,8 +20,13 @@ from myapp.serializers.auth_serializer import (
     PasswordResetConfirmSerializer
 )
 
+class CsrfExemptSessionAuthentication(SessionAuthentication):
+    def enforce_csrf(self, request):
+        return
 
 class LoginAPI(APIView):
+
+    authentication_classes = [CsrfExemptSessionAuthentication]
 
     def post(self, request):
 
@@ -34,10 +39,8 @@ class LoginAPI(APIView):
 
             login(request, user)
 
-            # Ghi nhớ đăng nhập
             if not remember:
                 request.session.set_expiry(0)
-
             else:
                 request.session.set_expiry(1209600)
 
@@ -50,16 +53,11 @@ class LoginAPI(APIView):
                         "id": user.id,
                         "username": user.username,
                         "email": user.email,
-
-                        # ROLE
                         "role": user.role,
-
-                        # DJANGO ADMIN
                         "is_superuser": user.is_superuser,
                         "is_staff": user.is_staff,
                     },
                 },
-
                 status=status.HTTP_200_OK,
             )
 
@@ -68,7 +66,6 @@ class LoginAPI(APIView):
                 "success": False,
                 "errors": serializer.errors,
             },
-
             status=status.HTTP_400_BAD_REQUEST,
         )
 
