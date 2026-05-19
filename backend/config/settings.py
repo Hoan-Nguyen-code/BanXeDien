@@ -88,7 +88,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "GIS_BANXEDIEN",
+        "NAME": "gis_banxedien",
         "USER": "postgres",
         "PASSWORD": "1234", # chỉnh lại mật khẩu là được
         "HOST": "localhost",
