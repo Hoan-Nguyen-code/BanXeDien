@@ -10,7 +10,8 @@ from myapp.api.csrf_api import CSRFAPIView
 from myapp.api.qr_api import confirm_payment
 from myapp.api.map_api import (station_list, search_history_list)
 
-from myapp.api.admin_api import (admin_dashboard_api, admin_users_api, admin_products_api, admin_orders_api, admin_stations_api,admin_taichinh_api)
+from myapp.api.admin_api import (admin_dashboard_api, admin_users_api,admin_orders_api, admin_stations_api,admin_taichinh_api)
+from myapp.api.admin_products_api import admin_products_api
 from myapp.api.auth_api import (ForgetPasswordAPIView, PasswordResetConfirmAPIView)
 
 
@@ -46,6 +47,8 @@ urlpatterns = [
     path('admin/products/', admin_products_api),
     path('admin/orders/', admin_orders_api),
     path('admin/stations/', admin_stations_api),
+    path('admin/tai-chinh/', admin_taichinh_api),
+    path('admin/tai-chinh', admin_taichinh_api),
 
     # NEWS
     path("news/", news_api.get_news, name="api_news"),
@@ -60,21 +63,5 @@ urlpatterns = [
 
     # CSRF
     path("csrf/", CSRFAPIView.as_view()),
-
-    path('api/admin/dashboard/', admin_dashboard_api),
-    path('api/admin/users/', admin_users_api),
-    path('api/admin/products/', admin_products_api),
-    path('api/admin/orders/', admin_orders_api),
-    path('api/admin/stations/', admin_stations_api),
-    path('api/admin/tai-chinh/', admin_taichinh_api),
-    path('api/admin/tai-chinh', admin_taichinh_api),
-    # NEWS
-    path("news/", news_api.get_news, name="api_news"), 
-
-
-    #ForgetPassword
-    path("forget-password/", ForgetPasswordAPIView.as_view(), name="forget-password"),
-
-    path("reset-password/<uidb64>/<token>/", PasswordResetConfirmAPIView.as_view(), name="reset-password"),
 
 ]

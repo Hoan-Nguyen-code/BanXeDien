@@ -9,8 +9,6 @@ import type {
   FilterOption,
   AdminTaiChinhApiResponse,
 } from "../../assets/js/admin_tai_chinh";
-
-import "../../assets/css/admin_orders.css";
 import "../../assets/css/admin_tai_chinh.css";
 import AdminSidebar from "../../components/AdminSidebar";
 
@@ -41,9 +39,10 @@ export const Admin_Tai_Chinh: React.FC = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get<AdminTaiChinhApiResponse>(
-        `http://127.0.0.1:8000/api/admin/tai-chinh/?month=${month}&year=${year}`,
+        `http://127.0.0.1:8000/admin/tai-chinh/?month=${month}&year=${year}`,
         { headers: { Authorization: `Bearer ${token}` } },
       );
+      console.log("FINANCE API:", response.data);
 
       if (response.data) {
         setStats(response.data.stats);
@@ -138,7 +137,7 @@ export const Admin_Tai_Chinh: React.FC = () => {
                 <i className="fas fa-coins"></i>
               </div>
               <div className="stat-info">
-                <h3>{stats.revenue_month}</h3>
+                <h3>{stats?.revenue_month || "0 VNĐ"}</h3>
                 <p>Doanh thu tháng này</p>
               </div>
             </div>
@@ -148,7 +147,7 @@ export const Admin_Tai_Chinh: React.FC = () => {
                 <i className="fas fa-arrow-circle-down"></i>
               </div>
               <div className="stat-info">
-                <h3>{stats.expense_month}</h3>
+                <h3>{stats?.expense_month || "0 VNĐ"}</h3>
                 <p>Chi phí ước tính (60%)</p>
               </div>
             </div>
@@ -158,7 +157,7 @@ export const Admin_Tai_Chinh: React.FC = () => {
                 <i className="fas fa-money-bill-wave"></i>
               </div>
               <div className="stat-info">
-                <h3>{stats.profit_month}</h3>
+                <h3>{stats?.profit_month || "0 VNĐ"}</h3>
                 <p>Lợi nhuận ước tính (40%)</p>
               </div>
             </div>
@@ -168,7 +167,7 @@ export const Admin_Tai_Chinh: React.FC = () => {
                 <i className="fas fa-calendar-day"></i>
               </div>
               <div className="stat-info">
-                <h3>{stats.revenue_today}</h3>
+                <h3>{stats?.revenue_today || "0 VNĐ"}</h3>
                 <p>Doanh thu hôm nay</p>
               </div>
             </div>

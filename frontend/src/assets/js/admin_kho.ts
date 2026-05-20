@@ -8,8 +8,10 @@ export interface ProductInventoryItem {
     id: number;
     name: string;
   };
-  price: number; // Giá bán hiện tại
-  stock_quantity: number; // Số lượng tồn kho lấy từ relation 'inventory'
+  price: number;
+  inventory?: {
+    stock_quantity: number;
+  };
   status: "IN_STOCK" | "LOW_STOCK" | "OUT_OF_STOCK"; // Tình trạng tính toán dựa trên số lượng (>5, <=5, ==0)
   is_active: boolean; // Trạng thái kích hoạt sản phẩm
 }

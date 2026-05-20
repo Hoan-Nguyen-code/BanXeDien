@@ -114,28 +114,6 @@ def admin_users_api(request):
     }, status=status.HTTP_OK)
 
 
-# ==================== PRODUCTS ====================
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def admin_products_api(request):
-
-    if not is_admin(request.user):
-        return Response(
-            {'error': 'Permission denied'},
-            status=status.HTTP_403_FORBIDDEN
-        )
-
-    products = Product.objects.select_related(
-        'category',
-        'inventory'
-    ).all()
-
-    serializer = ProductSerializer(products, many=True)
-
-    return Response(serializer.data)
-
-
 # ==================== ORDERS ====================
 
 @api_view(['GET'])
