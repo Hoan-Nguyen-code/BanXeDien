@@ -48,21 +48,27 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
+CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
 ]
-
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+]
 ROOT_URLCONF = 'config.urls'
+
+CSRF_COOKIE_HTTPONLY = False
+CSRF_USE_SESSIONS = False
+
 
 TEMPLATES = [
     {
@@ -88,7 +94,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "GIS_BANXEDIEN",
+        "NAME": "gis_banxedien",
         "USER": "postgres",
         "PASSWORD": "1234", # chỉnh lại mật khẩu là được
         "HOST": "localhost",
@@ -147,3 +153,23 @@ SITE_URL = 'http://localhost:8000'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 CKEDITOR_UPLOAD_PATH = "uploads/"
+
+# =========================
+# COOKIE / SESSION FIX
+# =========================
+
+SESSION_COOKIE_SAMESITE = "Lax"
+#CSRF_COOKIE_SAMESITE = "Lax"
+
+SESSION_COOKIE_SECURE = False
+#CSRF_COOKIE_SECURE = False
+
+# ==========================================
+# DJANGO REST FRAMEWORK AUTHENTICATION
+# ==========================================
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+}

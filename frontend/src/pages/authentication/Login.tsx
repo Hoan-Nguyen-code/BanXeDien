@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
-import api from "../services/api";
+import api from "../../services/api";
 
-import "../assets/css/base.css";
-import "../assets/css/login.css";
+import "../../assets/css/login.css";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -21,19 +20,34 @@ export default function Login() {
     e.preventDefault();
 
     try {
+      await api.get("csrf/");
+
       const response = await api.post("login/", {
         username,
         password,
         remember,
       });
+      console.log("LOGIN RESPONSE:", response.data);
 
       alert(response.data.message);
 
-      // Lưu user vào localStorage
-      localStorage.setItem("user", JSON.stringify(response.data.user));
+      const user = response.data.user;
 
-      // Chuyển về trang chủ
-      window.location.href = "/";
+      // Lưu user
+      localStorage.setItem("user", JSON.stringify(user));
+
+      // Lưu token JWT
+      localStorage.setItem("token", response.data.token);
+
+      // ADMIN
+      if (user.role === "ADMIN" || user.is_superuser) {
+        window.location.href = "/admin/dashboard";
+      }
+
+      // USER THƯỜNG
+      else {
+        window.location.href = "/";
+      }
     } catch (error: any) {
       console.log(error.response?.data);
 
@@ -61,7 +75,7 @@ export default function Login() {
           <div className="content">
             <i className="fas fa-charging-station"></i>
 
-            <h1>WebGIS Xe Điện</h1>
+            <h1>ECO-BIKE</h1>
 
             <p>Hệ thống bán xe điện và tìm kiếm trạm sạc thông minh</p>
 
