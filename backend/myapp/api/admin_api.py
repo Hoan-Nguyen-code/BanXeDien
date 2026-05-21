@@ -4,9 +4,9 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-from django.utils import timezone
-from datetime import timedelta
 from django.db.models import Sum
+from rest_framework.pagination import PageNumberPagination
+
 
 from myapp.models import (
     User,
@@ -65,77 +65,6 @@ def admin_dashboard_api(request):
         'recent_orders': serializer.data,
     })
 
-
-# ==================== USERS ====================
-
-
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def admin_users_api(request):
-    if not is_admin(request.user):
-        return Response(
-            {'error': 'Permission denied'},
-            status=status.HTTP_403_FORBIDDEN
-        )
-
-    # 1. Lấy danh sách toàn bộ user, xếp theo ngày tham gia mới nhất
-    users_list = User.objects.all().order_by('-date_joined')
-
-    # 2. Tính toán số liệu thống kê (stats) đổ lên các thẻ Card ở UI
-    stats = {
-        'total': users_list.count(),
-        'active': users_list.filter(is_active=True).count(),
-        'admin': users_list.filter(role=User.Role.ADMIN).count(),
-        'new_this_month': users_list.filter(
-            date_joined__gte=timezone.now() - timedelta(days=30)
-        ).count()
-    }
-
-    # 3. Kích hoạt bộ phân trang tự động (Mỗi trang hiển thị 10 dòng)
-    paginator = PageNumberPagination()
-    paginator.page_size = 10
-    paginated_users = paginator.paginate_queryset(users_list, request)
-
-    # 4. Chuyển đổi dữ liệu đã phân trang qua Serializer
-    serializer = UserSerializer(paginated_users, many=True)
-
-    # 5. Phản hồi cấu trúc JSON hoàn chỉnh
-    return Response({
-        'stats': stats,
-        'pagination': {
-            'count': paginator.page.paginator.count,
-            'next': paginator.get_next_link(),
-            'previous': paginator.get_previous_link(),
-            'total_pages': paginator.page.paginator.num_pages,
-            'current_page': paginator.page.number,
-        },
-        'results': serializer.data
-    }, status=status.HTTP_OK)
-
-
-# ==================== PRODUCTS ====================
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def admin_products_api(request):
-
-    if not is_admin(request.user):
-        return Response(
-            {'error': 'Permission denied'},
-            status=status.HTTP_403_FORBIDDEN
-        )
-
-    products = Product.objects.select_related(
-        'category',
-        'inventory'
-    ).all()
-
-    serializer = ProductSerializer(products, many=True)
-
-    return Response(serializer.data)
-
-
 # ==================== ORDERS ====================
 
 @api_view(['GET'])
@@ -164,12 +93,17 @@ def admin_orders_api(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def admin_stations_api(request):
+
     if not is_admin(request.user):
-        return Response({'error': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
+        return Response(
+            {'error': 'Permission denied'},
+            status=status.HTTP_403_FORBIDDEN
+        )
 
     stations = ChargingStation.objects.all().order_by('-id')
-    
-    # Tính toán thống kê
+
+    # ==================== STATS ====================
+
     stats = {
         'total': stations.count(),
         'active': stations.filter(status='ACTIVE').count(),
@@ -177,12 +111,33 @@ def admin_stations_api(request):
         'inactive': stations.filter(status='INACTIVE').count(),
     }
 
-    serializer = ChargingStationSerializer(stations, many=True)
+    # ==================== PAGINATION ====================
 
-    # Đã thêm dấu ngoặc đóng ')' cho hàm Response
+    paginator = PageNumberPagination()
+    paginator.page_size = 10
+
+    result_page = paginator.paginate_queryset(
+        stations,
+        request
+    )
+
+    serializer = ChargingStationSerializer(
+        result_page,
+        many=True
+    )
+
     return Response({
+        'stations': serializer.data,
+
         'stats': stats,
-        'stations': serializer.data
+
+        'pagination': {
+            'count': paginator.page.paginator.count,
+            'total_pages': paginator.page.paginator.num_pages,
+            'current_page': paginator.page.number,
+            'has_next': paginator.page.has_next(),
+            'has_previous': paginator.page.has_previous(),
+        }
     })
 
 # ==================== FINANCE (QUẢN LÝ TÀI CHÍNH) ====================
@@ -190,6 +145,7 @@ def admin_stations_api(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def admin_taichinh_api(request):
+
     if not is_admin(request.user):
         return Response(
             {'error': 'Permission denied'},
@@ -197,78 +153,82 @@ def admin_taichinh_api(request):
         )
 
     from django.utils import timezone
-    from django.db.models import F, Sum
-    
+    from django.db.models import Sum, F
+
     now = timezone.now()
-    
+
     try:
         selected_month = int(request.GET.get('month', now.month))
         selected_year = int(request.GET.get('year', now.year))
-    except ValueError:
+    except:
         selected_month = now.month
         selected_year = now.year
 
-    today = now.date()
-    VALID_STATUS = ['CONFIRMED', 'COMPLETED', 'SHIPPING']
+    # LẤY TẤT CẢ ĐƠN HÀNG
+    orders = Order.objects.all()
 
-    # 1. Tính tổng doanh thu tháng
-    revenue_month = Order.objects.filter(
+    # DOANH THU THÁNG
+    revenue_month = orders.filter(
         created_at__month=selected_month,
-        created_at__year=selected_year,
-        status__in=VALID_STATUS
-    ).aggregate(total=Sum('total_price'))['total'] or 0
+        created_at__year=selected_year
+    ).aggregate(
+        total=Sum('total_price')
+    )['total'] or 0
 
-    # 2. Tính doanh thu hôm nay
-    revenue_today = Order.objects.filter(
-        created_at__date=today,
-        status__in=VALID_STATUS
-    ).aggregate(total=Sum('total_price'))['total'] or 0
+    # DOANH THU HÔM NAY
+    revenue_today = orders.filter(
+        created_at__date=now.date()
+    ).aggregate(
+        total=Sum('total_price')
+    )['total'] or 0
 
-    # Tạm tính Chi phí (60%) và Lợi nhuận (40%) cho UI React
-    expense_month = round(float(revenue_month) * 0.6, 2)
-    profit_month = round(float(revenue_month) * 0.4, 2)
+    # CHI PHÍ & LỢI NHUẬN
+    expense_month = float(revenue_month) * 0.6
+    profit_month = float(revenue_month) * 0.4
 
-    def fmt(num):
-        return f"{int(num):,} VNĐ".replace(',', '.')
+    def format_money(value):
+        return f"{int(value):,} VNĐ".replace(",", ".")
 
     stats = {
-        'revenue_month': fmt(revenue_month),
-        'expense_month': fmt(expense_month),
-        'profit_month': fmt(profit_month),
-        'revenue_today': fmt(revenue_today),
+        'revenue_month': format_money(revenue_month),
+        'expense_month': format_money(expense_month),
+        'profit_month': format_money(profit_month),
+        'revenue_today': format_money(revenue_today),
     }
 
-    # 3. Tính dữ liệu biểu đồ 12 tháng (Đơn vị: Tỷ VNĐ)
+    # DỮ LIỆU BIỂU ĐỒ
     monthly_revenue = []
     monthly_expense = []
     monthly_profit = []
 
-    for m in range(1, 13):
-        rev = Order.objects.filter(
-            created_at__month=m,
-            created_at__year=selected_year,
-            status__in=VALID_STATUS
-        ).aggregate(total=Sum('total_price'))['total'] or 0
+    for month in range(1, 13):
 
-        rev_billion = round(float(rev) / 1_000_000_000, 2)
-        exp_billion = round(rev_billion * 0.6, 2)
-        pro_billion = round(rev_billion * 0.4, 2)
+        month_total = orders.filter(
+            created_at__month=month,
+            created_at__year=selected_year
+        ).aggregate(
+            total=Sum('total_price')
+        )['total'] or 0
 
-        monthly_revenue.append(rev_billion)
-        monthly_expense.append(exp_billion)
-        monthly_profit.append(pro_billion)
+        revenue_billion = round(float(month_total) / 1_000_000_000, 2)
+
+        monthly_revenue.append(revenue_billion)
+        monthly_expense.append(round(revenue_billion * 0.6, 2))
+        monthly_profit.append(round(revenue_billion * 0.4, 2))
 
     revenue_data = {
-        'labels': ['T1','T2','T3','T4','T5','T6','T7','T8','T9','T10','T11','T12'],
+        'labels': [
+            'T1', 'T2', 'T3', 'T4',
+            'T5', 'T6', 'T7', 'T8',
+            'T9', 'T10', 'T11', 'T12'
+        ],
         'revenue': monthly_revenue,
         'expense': monthly_expense,
         'profit': monthly_profit,
     }
 
-    # 4. Thống kê Top 5 sản phẩm bán chạy
-    top_products_qs = OrderItem.objects.filter(
-        order__status__in=VALID_STATUS
-    ).values(
+    # TOP SẢN PHẨM
+    top_products_qs = OrderItem.objects.values(
         'product__name'
     ).annotate(
         total_sold=Sum('quantity'),
@@ -276,22 +236,36 @@ def admin_taichinh_api(request):
     ).order_by('-total_revenue')[:5]
 
     top_products = []
+
     for p in top_products_qs:
         top_products.append({
             'name': p['product__name'],
             'sold': p['total_sold'],
-            'revenue': fmt(p['total_revenue']),
+            'revenue': format_money(p['total_revenue']),
         })
 
-    months_options = [{'value': i} for i in range(1, 13)]
-    years_options = list(range(2024, now.year + 1))
-
     return Response({
-        'stats': stats,
-        'revenue_data': revenue_data,
-        'top_products': top_products,
-        'selected_month': selected_month,
-        'selected_year': selected_year,
-        'months': months_options,
-        'years': years_options,
-    }, status=status.HTTP_OK)
+    'stats': stats,
+    'revenue_data': revenue_data,
+    'top_products': top_products,
+
+    'selected_month': selected_month,
+    'selected_year': selected_year,
+
+    'months': [
+        {'value': 1},
+        {'value': 2},
+        {'value': 3},
+        {'value': 4},
+        {'value': 5},
+        {'value': 6},
+        {'value': 7},
+        {'value': 8},
+        {'value': 9},
+        {'value': 10},
+        {'value': 11},
+        {'value': 12},
+    ],
+
+    'years': [2024, 2025, 2026],
+})

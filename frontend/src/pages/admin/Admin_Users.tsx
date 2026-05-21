@@ -1,7 +1,8 @@
 // src/pages/admin/Admin_Users.tsx
 
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../../services/api";
+import "../../assets/css/admin_users.css";
 
 import type {
   UserItem,
@@ -10,22 +11,17 @@ import type {
   AdminUsersApiResponse,
 } from "../../assets/js/admin_user";
 
-// Sử dụng chung file CSS của Orders để đồng bộ giao diện tuyệt đối
-import "../../assets/css/admin_orders.css";
-
-// Import Sidebar component giống hệt trang Orders của Huy
 import AdminSidebar from "../../components/AdminSidebar";
 
 export const Admin_Users: React.FC = () => {
-  // ----------------------------------------------------
-  // 1. KHỞI TẠO STATE & GIÁ TRỊ MẶC ĐỊNH TRÁNH SẬP TRANG
-  // ----------------------------------------------------
+  // ============================================================
+  // STATE
+  // ============================================================
   const [users, setUsers] = useState<UserItem[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [loading, setLoading] = useState<boolean>(true);
   const [roleFilter, setRoleFilter] = useState<string>("");
 
-  // Object Stats khớp với cấu trúc 4 Card màu của bạn (blue, orange, cyan, green)
   const [stats, setStats] = useState<UserStats>({
     total: 0,
     active: 0,
@@ -33,7 +29,6 @@ export const Admin_Users: React.FC = () => {
     new_this_month: 0,
   });
 
-  // Khởi tạo Object Phân trang mặc định
   const [pagination, setPagination] = useState<PaginationInfo>({
     count: 0,
     next: null,
@@ -42,13 +37,11 @@ export const Admin_Users: React.FC = () => {
     current_page: 1,
   });
 
-  // Quản lý trạng thái màn hình giao diện (list: Danh sách, add: Thêm, edit: Sửa, detail: Chi tiết)
   const [viewMode, setViewMode] = useState<"list" | "add" | "edit" | "detail">(
     "list",
   );
   const [selectedUser, setSelectedUser] = useState<UserItem | null>(null);
 
-  // Dữ liệu Form đồng bộ với API Django Backend
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -61,27 +54,35 @@ export const Admin_Users: React.FC = () => {
     is_active: true,
   });
 
-  // ----------------------------------------------------
-  // 2. GỌI API ĐỔ DỮ LIỆU BẤT ĐỒNG BỘ (BẰNG AXIOS)
-  // ----------------------------------------------------
+  // ============================================================
+  // API
+  // ============================================================
   const fetchUsers = async (page: number, roleParam: string = "") => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("token");
-      let url = `http://127.0.0.1:8000/api/admin/users/?page=${page}`;
-      if (roleParam) {
-        url += `&role=${roleParam}`;
-      }
-
-      const response = await axios.get<AdminUsersApiResponse>(url, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      setUsers(response.data.results);
-      setStats(response.data.stats);
-      setPagination(response.data.pagination);
+      const response = await api.get<AdminUsersApiResponse>(
+        `admin/users/?page=${page}${roleParam ? `&role=${roleParam}` : ""}`,
+      );
+      setUsers(response.data?.results ?? []);
+      setStats(
+        response.data?.stats ?? {
+          total: 0,
+          active: 0,
+          admin: 0,
+          new_this_month: 0,
+        },
+      );
+      setPagination(
+        response.data?.pagination ?? {
+          count: 0,
+          next: null,
+          previous: null,
+          total_pages: 1,
+          current_page: 1,
+        },
+      );
     } catch (error) {
-      console.error("Lỗi kết nối API lấy danh sách user:", error);
+      console.error("Lỗi API users:", error);
     } finally {
       setLoading(false);
     }
@@ -91,12 +92,12 @@ export const Admin_Users: React.FC = () => {
     fetchUsers(currentPage, roleFilter);
   }, [currentPage, roleFilter]);
 
-  // ----------------------------------------------------
-  // 3. XỬ LÝ SỰ KIỆN TƯƠNG TÁC GIAO DIỆN
-  // ----------------------------------------------------
-  const handleFilterChange = (status: string) => {
-    setRoleFilter(status);
-    setCurrentPage(1); // Reset về trang 1 khi lọc tài khoản
+  // ============================================================
+  // HANDLERS
+  // ============================================================
+  const handleFilterChange = (role: string) => {
+    setRoleFilter(role);
+    setCurrentPage(1);
   };
 
   const handleViewDetail = (user: UserItem) => {
@@ -152,71 +153,51 @@ export const Admin_Users: React.FC = () => {
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem("token");
-      const headers = { Authorization: `Bearer ${token}` };
-
       if (viewMode === "add") {
-        await axios.post(
-          "http://127.0.0.1:8000/api/admin/users/add/",
-          formData,
-          { headers },
-        );
+        await api.post("admin/users/add/", formData);
         alert("Thêm tài khoản người dùng thành công!");
       } else if (viewMode === "edit" && selectedUser) {
-        await axios.put(
-          `http://127.0.0.1:8000/api/admin/users/${selectedUser.id}/edit/`,
-          formData,
-          { headers },
-        );
+        await api.put(`admin/users/${selectedUser.id}/edit/`, formData);
         alert("Cập nhật thông tin thành công!");
       }
       setViewMode("list");
       fetchUsers(currentPage, roleFilter);
     } catch (error) {
-      console.error("Lỗi khi lưu dữ liệu user:", error);
+      console.error("Lỗi submit:", error);
       alert("Thao tác thất bại, vui lòng kiểm tra lại thông tin đầu vào!");
     }
   };
 
-  // Sử dụng window.confirm giống chuẩn handleConfirmDelete bên Orders của Huy
   const handleDeleteUser = async (id: number, username: string) => {
     const confirmDelete = window.confirm(
       `Bạn có chắc muốn xóa vĩnh viễn user @${username}?\nHành động này không thể hoàn tác!`,
     );
-
-    if (confirmDelete) {
-      try {
-        const token = localStorage.getItem("token");
-        await axios.delete(
-          `http://127.0.0.1:8000/api/admin/users/${id}/delete/`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          },
-        );
-        alert(`Đã xóa tài khoản ${username} thành công!`);
-        fetchUsers(currentPage, roleFilter);
-      } catch (error) {
-        console.error("Lỗi xóa user:", error);
-        alert("Không thể xóa đối tượng người dùng này!");
-      }
+    if (!confirmDelete) return;
+    try {
+      await api.delete(`admin/users/${id}/delete/`);
+      alert(`Đã xóa tài khoản ${username} thành công!`);
+      fetchUsers(currentPage, roleFilter);
+    } catch (error) {
+      console.error("Lỗi xóa user:", error);
+      alert("Không thể xóa tài khoản này!");
     }
   };
 
+  // ============================================================
+  // RENDER
+  // ============================================================
   return (
     <div className="admin-layout">
-      {/* SIDEBAR TỰ ĐỘNG CHUYỂN ACTIVE SANG MENU USERS */}
       <AdminSidebar active="users" />
 
-      {/* MAIN CONTENT BLOCK */}
       <div className="admin-main-content">
-        {/* NAVBAR ĐỒNG BỘ 100% VỚI TRANG ORDERS */}
+        {/* ── NAVBAR ── */}
         <div className="admin-navbar">
           <div className="admin-navbar-left">
             <h1>
               <i className="fas fa-users"></i> Quản lý Thành viên
             </h1>
           </div>
-
           <div className="admin-navbar-right">
             <div className="admin-info">
               <span className="admin-name">Admin Panel</span>
@@ -227,12 +208,13 @@ export const Admin_Users: React.FC = () => {
           </div>
         </div>
 
-        {/* CONTENT CHÍNH */}
         <div className="admin-content fade-in">
-          {/* ==================== MÀN HÌNH 1: DANH SÁCH USER (LIST VIEW) ==================== */}
+          {/* ══════════════════════════════════════
+              VIEW: LIST
+          ══════════════════════════════════════ */}
           {viewMode === "list" && (
             <>
-              {/* Thống kê 4 khối màu khớp chuẩn với CSS mẫu */}
+              {/* STATS CARDS */}
               <div className="stats-grid">
                 <div className="stat-card blue">
                   <div className="stat-icon">
@@ -275,16 +257,12 @@ export const Admin_Users: React.FC = () => {
                 </div>
               </div>
 
-              {/* BẢNG DỮ LIỆU CHÍNH */}
+              {/* TABLE SECTION */}
               <div className="admin-section">
                 <div className="admin-section-header">
                   <h2>Danh sách tài khoản</h2>
 
-                  <div
-                    className="header-actions"
-                    style={{ display: "flex", gap: "12px" }}
-                  >
-                    {/* Bộ lọc vai trò áp dụng class custom-filter */}
+                  <div className="header-actions">
                     <select
                       className="custom-filter"
                       value={roleFilter}
@@ -297,15 +275,7 @@ export const Admin_Users: React.FC = () => {
 
                     <button
                       onClick={handleOpenAdd}
-                      className="page-btn current"
-                      style={{
-                        border: "none",
-                        cursor: "pointer",
-                        display: "flex",
-                        gap: "8px",
-                        height: "50px",
-                        minWidth: "150px",
-                      }}
+                      className="page-btn current btn-add-user"
                     >
                       <i className="fas fa-plus"></i> Thêm User
                     </button>
@@ -313,18 +283,11 @@ export const Admin_Users: React.FC = () => {
                 </div>
 
                 {loading ? (
-                  <div
-                    style={{
-                      padding: "40px",
-                      textAlign: "center",
-                      fontWeight: "700",
-                      color: "#475569",
-                    }}
-                  >
+                  <div className="loading-box">
                     <i
                       className="fas fa-spinner fa-spin"
-                      style={{ marginRight: "8px" }}
-                    ></i>{" "}
+                      style={{ marginRight: 8 }}
+                    ></i>
                     Đang tải dữ liệu...
                   </div>
                 ) : (
@@ -343,10 +306,9 @@ export const Admin_Users: React.FC = () => {
                             <th>Thao tác</th>
                           </tr>
                         </thead>
-
                         <tbody>
-                          {users.length > 0 ? (
-                            users.map((user) => (
+                          {(users ?? []).length > 0 ? (
+                            (users ?? []).map((user) => (
                               <tr key={user.id}>
                                 <td>
                                   <strong>#{user.id}</strong>
@@ -357,11 +319,10 @@ export const Admin_Users: React.FC = () => {
                                 <td>{user.email || "-"}</td>
                                 <td>
                                   {user.first_name || user.last_name
-                                    ? `${user.last_name || ""} ${user.first_name || ""}`
+                                    ? `${user.last_name || ""} ${user.first_name || ""}`.trim()
                                     : "-"}
                                 </td>
                                 <td>
-                                  {/* Map badge màu giống hệt trạng thái của đơn hàng */}
                                   <span
                                     className={`status-badge ${user.role === "ADMIN" ? "confirmed" : "shipped"}`}
                                   >
@@ -381,7 +342,7 @@ export const Admin_Users: React.FC = () => {
                                   ).toLocaleDateString("vi-VN")}
                                 </td>
                                 <td>
-                                  <div style={{ display: "flex", gap: 8 }}>
+                                  <div className="table-actions">
                                     <button
                                       onClick={() => handleViewDetail(user)}
                                       className="btn-action"
@@ -423,51 +384,27 @@ export const Admin_Users: React.FC = () => {
                       </table>
                     </div>
 
-                    {/* PHÂN TRANG FLEXBOX CAO CẤP CHUẨN DỰ ÁN */}
-                    <div
-                      className="pagination-list"
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                      }}
-                    >
-                      <div
-                        style={{
-                          fontSize: "14px",
-                          fontWeight: "600",
-                          color: "#64748b",
-                        }}
-                      >
+                    {/* PAGINATION */}
+                    <div className="pagination-wrapper">
+                      <div className="pagination-info">
                         Trang {pagination.current_page} /{" "}
-                        {pagination.total_pages} (Tổng {pagination.count} users)
+                        {pagination.total_pages}
+                        &nbsp;(Tổng {pagination.count} users)
                       </div>
-                      <div style={{ display: "flex", gap: "6px" }}>
+                      <div className="pagination-buttons">
                         <button
                           disabled={!pagination.previous}
                           onClick={() => setCurrentPage(1)}
-                          className="page-btn"
-                          style={{
-                            minWidth: "70px",
-                            opacity: pagination.previous ? 1 : 0.4,
-                            cursor: pagination.previous
-                              ? "pointer"
-                              : "not-allowed",
-                          }}
+                          className={`page-btn ${!pagination.previous ? "page-btn-disabled" : "page-btn-enabled"}`}
+                          style={{ minWidth: 70 }}
                         >
                           &laquo; Đầu
                         </button>
                         <button
                           disabled={!pagination.previous}
                           onClick={() => setCurrentPage((p) => p - 1)}
-                          className="page-btn"
-                          style={{
-                            minWidth: "80px",
-                            opacity: pagination.previous ? 1 : 0.4,
-                            cursor: pagination.previous
-                              ? "pointer"
-                              : "not-allowed",
-                          }}
+                          className={`page-btn ${!pagination.previous ? "page-btn-disabled" : "page-btn-enabled"}`}
+                          style={{ minWidth: 80 }}
                         >
                           Trước
                         </button>
@@ -477,24 +414,16 @@ export const Admin_Users: React.FC = () => {
                         <button
                           disabled={!pagination.next}
                           onClick={() => setCurrentPage((p) => p + 1)}
-                          className="page-btn"
-                          style={{
-                            minWidth: "80px",
-                            opacity: pagination.next ? 1 : 0.4,
-                            cursor: pagination.next ? "pointer" : "not-allowed",
-                          }}
+                          className={`page-btn ${!pagination.next ? "page-btn-disabled" : "page-btn-enabled"}`}
+                          style={{ minWidth: 80 }}
                         >
                           Tiếp
                         </button>
                         <button
                           disabled={!pagination.next}
                           onClick={() => setCurrentPage(pagination.total_pages)}
-                          className="page-btn"
-                          style={{
-                            minWidth: "70px",
-                            opacity: pagination.next ? 1 : 0.4,
-                            cursor: pagination.next ? "pointer" : "not-allowed",
-                          }}
+                          className={`page-btn ${!pagination.next ? "page-btn-disabled" : "page-btn-enabled"}`}
+                          style={{ minWidth: 70 }}
                         >
                           Cuối &raquo;
                         </button>
@@ -506,17 +435,16 @@ export const Admin_Users: React.FC = () => {
             </>
           )}
 
-          {/* ==================== MÀN HÌNH 2: FORM THÊM / SỬA USER ==================== */}
+          {/* ══════════════════════════════════════
+              VIEW: ADD / EDIT FORM
+          ══════════════════════════════════════ */}
           {(viewMode === "add" || viewMode === "edit") && (
-            <div
-              className="admin-section"
-              style={{ maxWidth: "800px", margin: "0 auto" }}
-            >
+            <div className="admin-section user-form-container">
               <div className="admin-section-header">
                 <h2>
                   <i
                     className={`fas fa-user-${viewMode === "add" ? "plus" : "edit"}`}
-                    style={{ marginRight: "10px", color: "#2563eb" }}
+                    style={{ marginRight: 10, color: "#2563eb" }}
                   ></i>
                   {viewMode === "add"
                     ? "Tạo Tài Khoản Người Dùng Mới"
@@ -524,38 +452,11 @@ export const Admin_Users: React.FC = () => {
                 </h2>
               </div>
 
-              <form
-                onSubmit={handleFormSubmit}
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "20px",
-                  marginTop: "15px",
-                }}
-              >
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: "20px",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "6px",
-                    }}
-                  >
-                    <label
-                      style={{
-                        fontWeight: "700",
-                        color: "#334155",
-                        fontSize: "14px",
-                      }}
-                    >
-                      Username đăng nhập *
-                    </label>
+              <form onSubmit={handleFormSubmit} className="user-form">
+                {/* Row 1: Username + Email */}
+                <div className="form-grid-2">
+                  <div className="form-group">
+                    <label className="form-label">Username đăng nhập *</label>
                     <input
                       type="text"
                       name="username"
@@ -563,150 +464,64 @@ export const Admin_Users: React.FC = () => {
                       disabled={viewMode === "edit"}
                       value={formData.username}
                       onChange={handleInputChange}
-                      className="custom-filter"
-                      style={{ width: "100%" }}
+                      className="custom-filter full-width"
                     />
                   </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "6px",
-                    }}
-                  >
-                    <label
-                      style={{
-                        fontWeight: "700",
-                        color: "#334155",
-                        fontSize: "14px",
-                      }}
-                    >
-                      Hộp thư (Email)
-                    </label>
+                  <div className="form-group">
+                    <label className="form-label">Hộp thư (Email)</label>
                     <input
                       type="email"
                       name="email"
                       value={formData.email}
                       onChange={handleInputChange}
-                      className="custom-filter"
-                      style={{ width: "100%" }}
+                      className="custom-filter full-width"
                     />
                   </div>
                 </div>
 
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: "20px",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "6px",
-                    }}
-                  >
-                    <label
-                      style={{
-                        fontWeight: "700",
-                        color: "#334155",
-                        fontSize: "14px",
-                      }}
-                    >
-                      Họ
-                    </label>
+                {/* Row 2: Họ + Tên */}
+                <div className="form-grid-2">
+                  <div className="form-group">
+                    <label className="form-label">Họ</label>
                     <input
                       type="text"
                       name="last_name"
                       value={formData.last_name}
                       onChange={handleInputChange}
-                      className="custom-filter"
-                      style={{ width: "100%" }}
+                      className="custom-filter full-width"
                     />
                   </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "6px",
-                    }}
-                  >
-                    <label
-                      style={{
-                        fontWeight: "700",
-                        color: "#334155",
-                        fontSize: "14px",
-                      }}
-                    >
-                      Tên
-                    </label>
+                  <div className="form-group">
+                    <label className="form-label">Tên</label>
                     <input
                       type="text"
                       name="first_name"
                       value={formData.first_name}
                       onChange={handleInputChange}
-                      className="custom-filter"
-                      style={{ width: "100%" }}
+                      className="custom-filter full-width"
                     />
                   </div>
                 </div>
 
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: "20px",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "6px",
-                    }}
-                  >
-                    <label
-                      style={{
-                        fontWeight: "700",
-                        color: "#334155",
-                        fontSize: "14px",
-                      }}
-                    >
-                      Số điện thoại
-                    </label>
+                {/* Row 3: Phone + Role */}
+                <div className="form-grid-2">
+                  <div className="form-group">
+                    <label className="form-label">Số điện thoại</label>
                     <input
                       type="text"
                       name="phone"
                       value={formData.phone}
                       onChange={handleInputChange}
-                      className="custom-filter"
-                      style={{ width: "100%" }}
+                      className="custom-filter full-width"
                     />
                   </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "6px",
-                    }}
-                  >
-                    <label
-                      style={{
-                        fontWeight: "700",
-                        color: "#334155",
-                        fontSize: "14px",
-                      }}
-                    >
-                      Quyền hạn tài khoản
-                    </label>
+                  <div className="form-group">
+                    <label className="form-label">Quyền hạn tài khoản</label>
                     <select
                       name="role"
                       value={formData.role}
                       onChange={handleInputChange}
-                      className="custom-filter"
-                      style={{ width: "100%" }}
+                      className="custom-filter full-width"
                     >
                       <option value="CUSTOMER">
                         Customer (Khách mua hàng)
@@ -718,52 +533,21 @@ export const Admin_Users: React.FC = () => {
                   </div>
                 </div>
 
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "6px",
-                  }}
-                >
-                  <label
-                    style={{
-                      fontWeight: "700",
-                      color: "#334155",
-                      fontSize: "14px",
-                    }}
-                  >
-                    Địa chỉ cư trú
-                  </label>
+                {/* Row 4: Address */}
+                <div className="form-group">
+                  <label className="form-label">Địa chỉ cư trú</label>
                   <textarea
                     name="address"
                     rows={2}
                     value={formData.address}
                     onChange={handleInputChange}
-                    className="custom-filter"
-                    style={{
-                      width: "100%",
-                      height: "auto",
-                      padding: "12px 16px",
-                    }}
-                  ></textarea>
+                    className="custom-filter textarea-custom"
+                  />
                 </div>
 
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "6px",
-                  }}
-                >
-                  <label
-                    style={{
-                      fontWeight: "700",
-                      color: "#334155",
-                      fontSize: "14px",
-                    }}
-                  >
-                    Mật khẩu
-                  </label>
+                {/* Row 5: Password */}
+                <div className="form-group">
+                  <label className="form-label">Mật khẩu</label>
                   <input
                     type="password"
                     name="password"
@@ -775,67 +559,40 @@ export const Admin_Users: React.FC = () => {
                         : "Để trống nếu giữ nguyên mật khẩu cũ..."
                     }
                     required={viewMode === "add"}
-                    className="custom-filter"
-                    style={{ width: "100%" }}
+                    className="custom-filter full-width"
                   />
                 </div>
 
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "10px",
-                    margin: "5px 0",
-                  }}
-                >
+                {/* Row 6: is_active */}
+                <div className="checkbox-group">
                   <input
                     type="checkbox"
                     name="is_active"
                     id="is_active"
                     checked={formData.is_active}
                     onChange={handleInputChange}
-                    style={{ width: "18px", height: "18px", cursor: "pointer" }}
+                    className="checkbox-input"
                   />
-                  <label
-                    htmlFor="is_active"
-                    style={{
-                      fontWeight: "600",
-                      color: "#475569",
-                      cursor: "pointer",
-                      fontSize: "14px",
-                    }}
-                  >
+                  <label htmlFor="is_active" className="checkbox-label">
                     Kích hoạt tài khoản hoạt động
                   </label>
                 </div>
 
-                <div
-                  style={{ display: "flex", gap: "12px", marginTop: "10px" }}
-                >
+                {/* Buttons */}
+                <div className="form-buttons">
                   <button
                     type="submit"
                     className="page-btn current"
-                    style={{
-                      border: "none",
-                      cursor: "pointer",
-                      width: "160px",
-                    }}
+                    style={{ border: "none", cursor: "pointer", width: 160 }}
                   >
-                    <i
-                      className="fas fa-save"
-                      style={{ marginRight: "8px" }}
-                    ></i>{" "}
+                    <i className="fas fa-save" style={{ marginRight: 8 }}></i>
                     Lưu thông tin
                   </button>
                   <button
                     type="button"
                     onClick={() => setViewMode("list")}
-                    className="page-btn"
-                    style={{
-                      background: "#f1f5f9",
-                      color: "#475569",
-                      width: "100px",
-                    }}
+                    className="page-btn btn-secondary"
+                    style={{ width: 100 }}
                   >
                     Hủy bỏ
                   </button>
@@ -844,89 +601,46 @@ export const Admin_Users: React.FC = () => {
             </div>
           )}
 
-          {/* ==================== MÀN HÌNH 3: CHI TIẾT HỒ SƠ USER (DETAIL VIEW) ==================== */}
+          {/* ══════════════════════════════════════
+              VIEW: DETAIL
+          ══════════════════════════════════════ */}
           {viewMode === "detail" && selectedUser && (
-            <div
-              className="admin-section"
-              style={{ maxWidth: "750px", margin: "0 auto" }}
-            >
-              <div
-                className="admin-section-header"
-                style={{
-                  borderBottom: "1px solid #e2e8f0",
-                  paddingBottom: "16px",
-                }}
-              >
+            <div className="admin-section user-detail-container">
+              <div className="admin-section-header detail-header">
                 <h2>
                   <i
                     className="fas fa-id-card"
-                    style={{ marginRight: "10px", color: "#0891b2" }}
-                  ></i>{" "}
+                    style={{ marginRight: 10, color: "#0891b2" }}
+                  ></i>
                   Chi Tiết Hồ Sơ Thành Viên
                 </h2>
                 <button
                   onClick={() => setViewMode("list")}
-                  className="page-btn"
-                  style={{
-                    background: "#f1f5f9",
-                    color: "#475569",
-                    minWidth: "100px",
-                    height: "40px",
-                  }}
+                  className="page-btn btn-secondary"
+                  style={{ minWidth: 100, height: 40 }}
                 >
                   <i
                     className="fas fa-arrow-left"
-                    style={{ marginRight: "6px" }}
-                  ></i>{" "}
+                    style={{ marginRight: 6 }}
+                  ></i>
                   Trở về
                 </button>
               </div>
 
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 2fr",
-                  gap: "30px",
-                  marginTop: "24px",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    borderRight: "1px solid #f1f5f9",
-                    paddingRight: "20px",
-                  }}
-                >
-                  <div
-                    style={{
-                      width: "100px",
-                      height: "100px",
-                      borderRadius: "50%",
-                      background: "#e2e8f0",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: "40px",
-                      color: "#94a3b8",
-                      marginBottom: "16px",
-                    }}
-                  >
+              <div className="detail-grid">
+                {/* Avatar column */}
+                <div className="detail-sidebar">
+                  <div className="detail-avatar">
                     <i className="fas fa-user"></i>
                   </div>
                   <h3
-                    style={{
-                      margin: "0 0 6px",
-                      fontSize: "18px",
-                      fontWeight: "800",
-                    }}
+                    style={{ margin: "0 0 6px", fontSize: 18, fontWeight: 800 }}
                   >
                     @{selectedUser.username}
                   </h3>
                   <span
                     className={`status-badge ${selectedUser.role === "ADMIN" ? "confirmed" : "shipped"}`}
-                    style={{ marginBottom: "10px" }}
+                    style={{ marginBottom: 10 }}
                   >
                     {selectedUser.role}
                   </span>
@@ -937,137 +651,45 @@ export const Admin_Users: React.FC = () => {
                   </span>
                 </div>
 
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "14px",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      borderBottom: "1px solid #f8fafc",
-                      paddingBottom: "8px",
-                    }}
-                  >
-                    <span
-                      style={{
-                        width: "140px",
-                        fontWeight: "700",
-                        color: "#64748b",
-                      }}
-                    >
-                      Mã ID User:
-                    </span>
-                    <span style={{ fontWeight: "600", color: "#1e293b" }}>
-                      #{selectedUser.id}
-                    </span>
+                {/* Info column */}
+                <div className="detail-info">
+                  <div className="detail-row">
+                    <span className="detail-label">Mã ID User:</span>
+                    <span className="detail-value">#{selectedUser.id}</span>
                   </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      borderBottom: "1px solid #f8fafc",
-                      paddingBottom: "8px",
-                    }}
-                  >
-                    <span
-                      style={{
-                        width: "140px",
-                        fontWeight: "700",
-                        color: "#64748b",
-                      }}
-                    >
-                      Thư điện tử:
-                    </span>
-                    <span style={{ fontWeight: "600", color: "#1e293b" }}>
+                  <div className="detail-row">
+                    <span className="detail-label">Thư điện tử:</span>
+                    <span className="detail-value">
                       {selectedUser.email || "Chưa thiết lập"}
                     </span>
                   </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      borderBottom: "1px solid #f8fafc",
-                      paddingBottom: "8px",
-                    }}
-                  >
-                    <span
-                      style={{
-                        width: "140px",
-                        fontWeight: "700",
-                        color: "#64748b",
-                      }}
-                    >
-                      Họ & tên đầy đủ:
-                    </span>
-                    <span style={{ fontWeight: "600", color: "#1e293b" }}>
+                  <div className="detail-row">
+                    <span className="detail-label">Họ & tên đầy đủ:</span>
+                    <span className="detail-value">
                       {selectedUser.first_name || selectedUser.last_name
-                        ? `${selectedUser.last_name || ""} ${selectedUser.first_name || ""}`
+                        ? `${selectedUser.last_name || ""} ${selectedUser.first_name || ""}`.trim()
                         : "Chưa cập nhật"}
                     </span>
                   </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      borderBottom: "1px solid #f8fafc",
-                      paddingBottom: "8px",
-                    }}
-                  >
-                    <span
-                      style={{
-                        width: "140px",
-                        fontWeight: "700",
-                        color: "#64748b",
-                      }}
-                    >
-                      Số điện thoại:
-                    </span>
-                    <span style={{ fontWeight: "600", color: "#1e293b" }}>
+                  <div className="detail-row">
+                    <span className="detail-label">Số điện thoại:</span>
+                    <span className="detail-value">
                       {selectedUser.phone || "Chưa cập nhật"}
                     </span>
                   </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      borderBottom: "1px solid #f8fafc",
-                      paddingBottom: "8px",
-                    }}
-                  >
-                    <span
-                      style={{
-                        width: "140px",
-                        fontWeight: "700",
-                        color: "#64748b",
-                      }}
-                    >
-                      Ngày tham gia:
-                    </span>
-                    <span style={{ fontWeight: "600", color: "#1e293b" }}>
+                  <div className="detail-row">
+                    <span className="detail-label">Ngày tham gia:</span>
+                    <span className="detail-value">
                       {new Date(selectedUser.date_joined).toLocaleString(
                         "vi-VN",
                       )}
                     </span>
                   </div>
                   <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "4px",
-                    }}
+                    style={{ display: "flex", flexDirection: "column", gap: 4 }}
                   >
-                    <span style={{ fontWeight: "700", color: "#64748b" }}>
-                      Địa chỉ đăng ký:
-                    </span>
-                    <span
-                      style={{
-                        fontWeight: "600",
-                        color: "#1e293b",
-                        background: "#f8fafc",
-                        padding: "10px",
-                        borderRadius: "8px",
-                        marginTop: "4px",
-                      }}
-                    >
+                    <span className="detail-label">Địa chỉ đăng ký:</span>
+                    <span className="detail-address">
                       {selectedUser.address ||
                         "Chưa ghi nhận địa chỉ cụ thể trên hệ thống."}
                     </span>

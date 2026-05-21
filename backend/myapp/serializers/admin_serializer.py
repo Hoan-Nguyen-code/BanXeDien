@@ -49,13 +49,22 @@ class InventorySerializer(serializers.ModelSerializer):
 
 
 # ==================== PRODUCT ====================
-
 class ProductSerializer(serializers.ModelSerializer):
+
     category = CategorySerializer(read_only=True)
+
     inventory = InventorySerializer(read_only=True)
+
+    stock_quantity = serializers.SerializerMethodField()
+
+    category_name = serializers.CharField(
+        source='category.name',
+        read_only=True
+    )
 
     class Meta:
         model = Product
+
         fields = [
             'id',
             'name',
@@ -63,10 +72,22 @@ class ProductSerializer(serializers.ModelSerializer):
             'price',
             'image',
             'is_active',
+
             'category',
+            'category_name',
+
             'inventory',
+            'stock_quantity',
+
             'created_at',
         ]
+
+    def get_stock_quantity(self, obj):
+
+        try:
+            return obj.inventory.stock_quantity
+        except:
+            return 0
 
 
 # ==================== ORDER ITEM ====================

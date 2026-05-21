@@ -27,13 +27,17 @@ export default function Login() {
         password,
         remember,
       });
+      console.log("LOGIN RESPONSE:", response.data);
 
       alert(response.data.message);
 
       const user = response.data.user;
 
-      // Lưu user vào localStorage
+      // Lưu user
       localStorage.setItem("user", JSON.stringify(user));
+
+      // Lưu token JWT
+      localStorage.setItem("token", response.data.token);
 
       // ADMIN
       if (user.role === "ADMIN" || user.is_superuser) {

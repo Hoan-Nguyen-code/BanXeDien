@@ -1,111 +1,312 @@
-/* --- Style chính cho Layout Trạm sạc --- */
+/* =========================
+   GLOBAL LAYOUT
+========================= */
 
-/* Badge trạng thái */
-.status-badge {
-  padding: 5px 10px;
-  border-radius: 6px;
-  font-size: 0.85rem;
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+  background: #f5f7fb;
+  font-family: "Inter", "Segoe UI", sans-serif;
+}
+
+/* MAIN CONTENT */
+.main-content {
+  flex: 1;
+  padding: 24px;
+  margin-left: 260px; /* nếu sidebar fixed */
+}
+
+/* NAVBAR */
+.navbar {
+  background: #ffffff;
+  padding: 18px 24px;
+  border-radius: 14px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+}
+
+.navbar h1 {
+  font-size: 20px;
   font-weight: 600;
-  text-transform: capitalize;
-}
-.status-badge.active {
-  background: #dcfce7;
-  color: #166534;
-}
-.status-badge.maintenance {
-  background: #fef3c7;
-  color: #92400e;
-}
-.status-badge.inactive {
-  background: #fee2e2;
-  color: #991b1b;
+  color: #1f2937;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-/* Nút thao tác (Sửa, Xóa, Xem) */
-.btn-action {
-  padding: 6px 10px;
-  border-radius: 6px;
-  border: 1px solid #e2e8f0;
-  margin-right: 5px;
-  text-decoration: none;
-  cursor: pointer;
-  transition: all 0.2s;
-  background: white;
-}
-.btn-action:hover {
-  background: #f1f5f9;
-}
-.btn-action.view {
-  color: #3b82f6;
-}
-.btn-action.edit {
-  color: #f59e0b;
-}
-.btn-action.delete {
-  color: #ef4444;
+/* =========================
+   CONTENT WRAPPER
+========================= */
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
-/* Pagination Footer (Đồng bộ với trang Kho) */
-.pagination-footer {
+/* =========================
+   STATS GRID
+========================= */
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.stat-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  transition: 0.25s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+.stat-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: #fff;
+}
+
+/* COLORS */
+.stat-card.blue .stat-icon {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.stat-card.green .stat-icon {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+}
+
+.stat-card.orange .stat-icon {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.stat-card.red .stat-icon {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.stat-info h3 {
+  font-size: 22px;
+  margin: 0;
+  color: #111827;
+}
+
+.stat-info p {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+/* =========================
+   SECTION (TABLE AREA)
+========================= */
+
+.section {
+  background: #fff;
+  border-radius: 14px;
+  padding: 18px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+}
+
+.section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px 20px;
-  background: white;
-  border-top: 1px solid #eee;
-  border-radius: 0 0 12px 12px;
+  margin-bottom: 16px;
 }
 
-.pagination-info {
-  color: #64748b;
-  font-size: 0.9rem;
-  font-weight: 500;
+.section-header h2 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
 }
 
-.page-btn {
-  padding: 6px 14px;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  background: white;
-  cursor: pointer;
-  color: #475569;
-  font-weight: 500;
-  transition: all 0.2s;
+/* BUTTON */
+.btn-primary {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: 0.2s;
 }
 
-.page-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
+.btn-primary:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
 }
 
-.page-btn.current {
-  background: #3b82f6;
-  color: white;
-  border-color: #3b82f6;
-}
+/* =========================
+   TABLE
+========================= */
 
-/* Đảm bảo bảng hiển thị gọn gàng */
 .table-container {
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  overflow-x: auto;
 }
 
 .data-table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 900px;
+}
+
+.data-table thead {
+  background: #f9fafb;
 }
 
 .data-table th {
-  padding: 12px;
   text-align: left;
-  border-bottom: 2px solid #f1f5f9;
-  color: #475569;
+  font-size: 13px;
+  color: #6b7280;
+  padding: 12px;
+  font-weight: 600;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .data-table td {
   padding: 12px;
-  border-bottom: 1px solid #f1f5f9;
-  font-size: 0.95rem;
+  font-size: 14px;
+  color: #111827;
+  border-bottom: 1px solid #f1f1f1;
+}
+
+.data-table tbody tr {
+  transition: 0.2s;
+}
+
+.data-table tbody tr:hover {
+  background: #f9fafb;
+}
+
+/* =========================
+   STATUS BADGE
+========================= */
+
+.status-badge {
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status-badge.active {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.status-badge.maintenance {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.status-badge.inactive {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+/* =========================
+   ACTION BUTTONS
+========================= */
+
+.btn-action {
+  border: none;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 8px;
+  margin-right: 4px;
+  transition: 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-action.view {
+  background: #e0f2fe;
+  color: #0284c7;
+}
+
+.btn-action.edit {
+  background: #fef9c3;
+  color: #ca8a04;
+}
+
+.btn-action.delete {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.btn-action:hover {
+  transform: scale(1.05);
+}
+
+/* =========================
+   PAGINATION
+========================= */
+
+.pagination-footer {
+  margin-top: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pagination-info {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.page-btn {
+  padding: 6px 12px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.page-btn.current {
+  background: #111827;
+  color: #fff;
+  border: none;
+}
+
+/* =========================
+   LOADING
+========================= */
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

@@ -2,36 +2,57 @@
 
 export interface ProductInventoryItem {
   id: number;
+
   name: string;
-  code: string; // Mã định danh sản phẩm (Mã SKU)
+
+  description: string;
+
+  price: number;
+
+  image: string;
+
+  is_active: boolean;
+
   category: {
     id: number;
     name: string;
   };
-  price: number; // Giá bán hiện tại
-  stock_quantity: number; // Số lượng tồn kho lấy từ relation 'inventory'
-  status: "IN_STOCK" | "LOW_STOCK" | "OUT_OF_STOCK"; // Tình trạng tính toán dựa trên số lượng (>5, <=5, ==0)
-  is_active: boolean; // Trạng thái kích hoạt sản phẩm
+
+  inventory?: {
+    stock_quantity: number;
+  };
+
+  status: "IN_STOCK" | "LOW_STOCK" | "OUT_OF_STOCK";
+
+  created_at: string;
 }
 
 export interface InventoryDashboardStats {
-  total_products: number; // products_list.count()
-  in_stock: number; // Số lượng tồn kho > 5
-  low_stock: number; // Số lượng tồn kho từ 1 đến 5
-  out_of_stock: number; // Số lượng bằng 0 hoặc không có record inventory
+  total_products: number;
+
+  in_stock: number;
+
+  low_stock: number;
+
+  out_of_stock: number;
 }
 
 export interface DjangoPagination {
   count: number;
+
   total_pages: number;
+
   current_page: number;
+
   has_next: boolean;
+
   has_previous: boolean;
 }
 
 export interface AdminKhoApiResponse {
   results: ProductInventoryItem[];
-  all_products_lookup: { id: number; name: string }[]; // Phục vụ danh sách xổ xuống trong Modal
+
   stats: InventoryDashboardStats;
+
   pagination: DjangoPagination;
 }

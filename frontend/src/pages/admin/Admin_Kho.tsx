@@ -1,18 +1,14 @@
 // src/pages/admin/Admin_Kho.tsx
 
 import React, { useState, useEffect } from "react";
-import axios from "axios";
-
-// Đi lùi 2 tầng ra src/ để import Type và CSS
+import api from "../../services/api";
 import type {
   ProductInventoryItem,
   InventoryDashboardStats,
   DjangoPagination,
   AdminKhoApiResponse,
 } from "../../assets/js/admin_kho";
-
-import "../../assets/css/admin_orders.css";
-import "../../assets/css/admin_kho.css"; // File CSS đặc thù của Kho bên dưới
+import "../../assets/css/admin_kho.css";
 import AdminSidebar from "../../components/AdminSidebar";
 
 export const Admin_Kho: React.FC = () => {
@@ -48,15 +44,34 @@ export const Admin_Kho: React.FC = () => {
   // Gọi API lấy dữ liệu trang quản lý kho
   const fetchKhoData = async (page: number) => {
     setLoading(true);
+
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get<AdminKhoApiResponse>(
-        `http://127.0.0.1:8000/api/admin/kho/?page=${page}`,
-        { headers: { Authorization: `Bearer ${token}` } },
+
+      const response = await api.get<AdminKhoApiResponse>(
+        `admin/products/?page=${page}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
       );
+
+      // DANH SÁCH SẢN PHẨM
       setProducts(response.data.results);
-      setLookupProducts(response.data.all_products_lookup);
+
+      // DỮ LIỆU CHO SELECT MODAL
+      setLookupProducts(
+        response.data.results.map((p) => ({
+          id: p.id,
+          name: p.name,
+        })),
+      );
+
+      // THỐNG KÊ
       setStats(response.data.stats);
+
+      // PHÂN TRANG
       setPagination(response.data.pagination);
     } catch (error) {
       console.error("Lỗi khi kết nối API admin_kho:", error);
@@ -69,16 +84,27 @@ export const Admin_Kho: React.FC = () => {
     fetchKhoData(currentPage);
   }, [currentPage]);
 
-  // Xử lý gửi lệnh POST Nhập/Xuất kho lên Django giống như xử lý form POST của Huy
   const handleInventorySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // 1. Kiểm tra sản phẩm
     if (!selectedProductId) {
       alert("Vui lòng chọn một sản phẩm!");
       return;
     }
 
+    // 2. Lấy token và kiểm tra xem nó có tồn tại không
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      console.error("Lỗi: Không tìm thấy token trong localStorage!");
+      alert(
+        "Bạn chưa đăng nhập hoặc token đã hết hạn. Vui lòng đăng nhập lại!",
+      );
+      return; // Dừng lại ở đây, không gửi request nữa
+    }
+
     try {
-      const token = localStorage.getItem("token");
       const formData = {
         action: modalAction,
         product_id: selectedProductId,
@@ -86,25 +112,28 @@ export const Admin_Kho: React.FC = () => {
         import_price: modalAction === "IMPORT" ? importPrice : undefined,
       };
 
-      await axios.post("http://127.0.0.1:8000/api/admin/kho/", formData, {
-        headers: { Authorization: `Bearer ${token}` },
+      // 3. Gửi request với token đã được kiểm tra
+      await api.post("admin/products/", formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
       });
 
       alert(
         `Thực hiện giao dịch ${modalAction === "IMPORT" ? "Nhập kho" : "Xuất kho"} thành công!`,
       );
       setShowActionModal(false);
-      // Reset form modal
       setSelectedProductId("");
       setActionQuantity(1);
       setImportPrice("");
-      // Tải lại dữ liệu mới nhất
+
       fetchKhoData(currentPage);
+      // ... reset form và fetch lại dữ liệu
     } catch (error: any) {
       console.error("Lỗi xử lý kho hàng:", error);
-      const errorMsg =
-        error.response?.data?.message || "Lỗi hệ thống không xác định!";
-      alert(`Thao tác thất bại. ${errorMsg}`);
+      alert("Thao tác thất bại. Kiểm tra quyền Admin của bạn.");
     }
   };
 
@@ -150,7 +179,7 @@ export const Admin_Kho: React.FC = () => {
                 <i className="fas fa-boxes"></i>
               </div>
               <div className="stat-info">
-                <h3>{stats.total_products}</h3>
+                <h3>{stats?.total_products || 0}</h3>
                 <p>Tổng mặt hàng</p>
               </div>
             </div>
@@ -159,7 +188,7 @@ export const Admin_Kho: React.FC = () => {
                 <i className="fas fa-check-circle"></i>
               </div>
               <div className="stat-info">
-                <h3>{stats.in_stock}</h3>
+                <h3>{stats?.in_stock || 0}</h3>
                 <p>Còn hàng dồi dào (&gt;5)</p>
               </div>
             </div>
@@ -168,7 +197,7 @@ export const Admin_Kho: React.FC = () => {
                 <i className="fas fa-exclamation-triangle"></i>
               </div>
               <div className="stat-info">
-                <h3>{stats.low_stock}</h3>
+                <h3>{stats?.low_stock || 0}</h3>
                 <p>Sắp hết hàng (1 - 5)</p>
               </div>
             </div>
@@ -180,7 +209,7 @@ export const Admin_Kho: React.FC = () => {
                 <i className="fas fa-times-circle"></i>
               </div>
               <div className="stat-info">
-                <h3 style={{ color: "#fff" }}>{stats.out_of_stock}</h3>
+                <h3 style={{ color: "#fff" }}>{stats?.out_of_stock || 0}</h3>
                 <p style={{ color: "#f8fafc" }}>Hết hàng (0)</p>
               </div>
             </div>
@@ -268,7 +297,7 @@ export const Admin_Kho: React.FC = () => {
                             <td>{p.price.toLocaleString("vi-VN")} đ</td>
                             <td style={{ textAlign: "center" }}>
                               <strong style={{ fontSize: "15px" }}>
-                                {p.stock_quantity}
+                                {p.inventory?.stock_quantity || 0}
                               </strong>
                             </td>
                             <td>
