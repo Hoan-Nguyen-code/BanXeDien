@@ -48,48 +48,31 @@ export const Admin_Kho: React.FC = () => {
     try {
       const token = localStorage.getItem("token");
 
-      const response = await api.get<any[]>(`admin/products/?page=${page}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
+      const response = await api.get<AdminKhoApiResponse>(
+        `admin/products/?page=${page}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
+      );
 
-      const productsData = response.data;
+      // DANH SÁCH SẢN PHẨM
+      setProducts(response.data.results);
 
-      setProducts(productsData);
-
+      // DỮ LIỆU CHO SELECT MODAL
       setLookupProducts(
-        productsData.map((p: any) => ({
+        response.data.results.map((p) => ({
           id: p.id,
           name: p.name,
         })),
       );
 
-      setStats({
-        total_products: productsData.length,
+      // THỐNG KÊ
+      setStats(response.data.stats);
 
-        in_stock: productsData.filter(
-          (p: any) => (p.inventory?.stock_quantity || 0) > 5,
-        ).length,
-
-        low_stock: productsData.filter(
-          (p: any) =>
-            (p.inventory?.stock_quantity || 0) > 0 &&
-            (p.inventory?.stock_quantity || 0) <= 5,
-        ).length,
-
-        out_of_stock: productsData.filter(
-          (p: any) => (p.inventory?.stock_quantity || 0) === 0,
-        ).length,
-      });
-
-      setPagination({
-        count: productsData.length,
-        total_pages: 1,
-        current_page: 1,
-        has_next: false,
-        has_previous: false,
-      });
+      // PHÂN TRANG
+      setPagination(response.data.pagination);
     } catch (error) {
       console.error("Lỗi khi kết nối API admin_kho:", error);
     } finally {
@@ -133,13 +116,20 @@ export const Admin_Kho: React.FC = () => {
       await api.post("admin/products/", formData, {
         headers: {
           Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
+        withCredentials: true,
       });
 
       alert(
         `Thực hiện giao dịch ${modalAction === "IMPORT" ? "Nhập kho" : "Xuất kho"} thành công!`,
       );
       setShowActionModal(false);
+      setSelectedProductId("");
+      setActionQuantity(1);
+      setImportPrice("");
+
+      fetchKhoData(currentPage);
       // ... reset form và fetch lại dữ liệu
     } catch (error: any) {
       console.error("Lỗi xử lý kho hàng:", error);

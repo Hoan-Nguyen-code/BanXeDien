@@ -63,11 +63,6 @@ const AdminSidebar = ({ active }: Props) => {
           <i className="fas fa-charging-station"></i>
           <span>Trạm sạc</span>
         </Link>
-
-        <Link to="/admin/thongke" className={isActive("thongke")}>
-          <i className="fas fa-chart-pie"></i>
-          <span>Thống kê</span>
-        </Link>
       </nav>
 
       {/* FOOTER */}

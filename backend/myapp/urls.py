@@ -10,9 +10,15 @@ from myapp.api.csrf_api import CSRFAPIView
 from myapp.api.qr_api import confirm_payment
 from myapp.api.map_api import (station_list, search_history_list)
 
-from myapp.api.admin_api import (admin_dashboard_api, admin_users_api,admin_orders_api, admin_stations_api,admin_taichinh_api)
+from myapp.api.admin_api import (admin_dashboard_api,admin_orders_api, admin_stations_api,admin_taichinh_api)
 from myapp.api.admin_products_api import admin_products_api
-from myapp.api.auth_api import (ForgetPasswordAPIView, PasswordResetConfirmAPIView)
+from myapp.api.admin_user_api import (
+    admin_users_api,
+    admin_add_user_api,
+    admin_edit_user_api,
+    admin_delete_user_api,
+)
+
 
 
 urlpatterns = [
@@ -44,11 +50,13 @@ urlpatterns = [
 
     path('admin/dashboard/', admin_dashboard_api),
     path('admin/users/', admin_users_api),
+    path('admin/users/add/', admin_add_user_api),
+    path('admin/users/<int:user_id>/edit/', admin_edit_user_api),
+    path('admin/users/<int:user_id>/delete/', admin_delete_user_api),
     path('admin/products/', admin_products_api),
     path('admin/orders/', admin_orders_api),
     path('admin/stations/', admin_stations_api),
     path('admin/tai-chinh/', admin_taichinh_api),
-    path('admin/tai-chinh', admin_taichinh_api),
 
     # NEWS
     path("news/", news_api.get_news, name="api_news"),

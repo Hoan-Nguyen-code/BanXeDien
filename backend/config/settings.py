@@ -169,6 +169,7 @@ SESSION_COOKIE_SECURE = False
 # ==========================================
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication', # <--- Đọc cookie sessionid và csrftoken tại đây
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
 }

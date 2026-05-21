@@ -1,73 +1,109 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../../services/api";
 
-// Lùi 2 tầng thư mục ra src để lấy Type và CSS
 import type {
   FinanceStats,
   TopProductItem,
   RevenueChartData,
   FilterOption,
-  AdminTaiChinhApiResponse,
 } from "../../assets/js/admin_tai_chinh";
+
 import "../../assets/css/admin_tai_chinh.css";
 import AdminSidebar from "../../components/AdminSidebar";
 
 export const Admin_Tai_Chinh: React.FC = () => {
+  const currentMonth = new Date().getMonth() + 1;
+  const currentYear = new Date().getFullYear();
+
   const [loading, setLoading] = useState<boolean>(true);
+
   const [stats, setStats] = useState<FinanceStats>({
     revenue_month: "0 VNĐ",
     expense_month: "0 VNĐ",
     profit_month: "0 VNĐ",
     revenue_today: "0 VNĐ",
   });
+
   const [topProducts, setTopProducts] = useState<TopProductItem[]>([]);
+
   const [chartData, setChartData] = useState<RevenueChartData | null>(null);
 
-  // Các state hỗ trợ bộ lọc dropdown trùng với logic Django
-  const [selectedMonth, setSelectedMonth] = useState<number>(
-    new Date().getMonth() + 1,
-  );
-  const [selectedYear, setSelectedYear] = useState<number>(
-    new Date().getFullYear(),
-  );
-  const [monthsOptions, setMonthsOptions] = useState<FilterOption[]>([]);
-  const [yearsOptions, setYearsOptions] = useState<number[]>([]);
+  const [selectedMonth, setSelectedMonth] = useState<number>(currentMonth);
 
-  // Hàm gọi API tài chính kết hợp query params bộ lọc
+  const [selectedYear, setSelectedYear] = useState<number>(currentYear);
+
+  // FIX: set sẵn để dropdown không bị trắng
+  const [monthsOptions, setMonthsOptions] = useState<FilterOption[]>(
+    Array.from({ length: 12 }, (_, i) => ({
+      value: i + 1,
+    })),
+  );
+
+  const [yearsOptions, setYearsOptions] = useState<number[]>([
+    2024, 2025, 2026,
+  ]);
+
   const fetchFinanceData = async (month: number, year: number) => {
-    setLoading(true);
     try {
-      const token = localStorage.getItem("token");
-      const response = await axios.get<AdminTaiChinhApiResponse>(
-        `http://127.0.0.1:8000/admin/tai-chinh/?month=${month}&year=${year}`,
-        { headers: { Authorization: `Bearer ${token}` } },
-      );
-      console.log("FINANCE API:", response.data);
+      setLoading(true);
 
-      if (response.data) {
-        setStats(response.data.stats);
-        setTopProducts(response.data.top_products || []);
-        setChartData(response.data.revenue_data);
-        setSelectedMonth(response.data.selected_month);
-        setSelectedYear(response.data.selected_year);
-        setMonthsOptions(response.data.months || []);
-        setYearsOptions(response.data.years || []);
+      const response = await api.get("admin/tai-chinh/", {
+        params: {
+          month,
+          year,
+        },
+      });
+
+      console.log("FINANCE DATA:", response.data);
+
+      const data = response.data;
+
+      setStats(data.stats);
+
+      setTopProducts(data.top_products || []);
+
+      setChartData(data.revenue_data);
+
+      setSelectedMonth(data.selected_month || month);
+
+      setSelectedYear(data.selected_year || year);
+
+      // FIX
+      if (data.months && data.months.length > 0) {
+        setMonthsOptions(data.months);
       }
-    } catch (error) {
-      console.error("Lỗi kết nối API quản lý tài chính:", error);
+
+      if (data.years && data.years.length > 0) {
+        setYearsOptions(data.years);
+      }
+    } catch (error: any) {
+      console.error(
+        "Lỗi API tài chính:",
+        error.response?.data || error.message,
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  // Chạy load dữ liệu chuẩn xác ngay khi mount component
   useEffect(() => {
     fetchFinanceData(selectedMonth, selectedYear);
   }, []);
 
-  // Xử lý khi Admin thay đổi tháng hoặc năm trên Dropdown công cụ lọc
-  const handleFilterChange = (month: number, year: number) => {
-    fetchFinanceData(month, year);
+  const handleMonthChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const month = Number(e.target.value);
+
+    setSelectedMonth(month);
+
+    fetchFinanceData(month, selectedYear);
+  };
+
+  const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const year = Number(e.target.value);
+
+    setSelectedYear(year);
+
+    fetchFinanceData(selectedMonth, year);
   };
 
   return (
@@ -75,16 +111,18 @@ export const Admin_Tai_Chinh: React.FC = () => {
       <AdminSidebar active="finance" />
 
       <div className="admin-main-content">
-        {/* NAVBAR ĐỒNG BỘ DỰ ÁN */}
         <div className="admin-navbar">
           <div className="admin-navbar-left">
             <h1>
-              <i className="fas fa-chart-bar"></i> Báo cáo Kế toán & Tài chính
+              <i className="fas fa-chart-bar"></i>
+              Báo cáo Kế toán & Tài chính
             </h1>
           </div>
+
           <div className="admin-navbar-right">
             <div className="admin-info">
               <span className="admin-name">Admin Finance</span>
+
               <div className="admin-avatar">
                 <i className="fas fa-user-shield"></i>
               </div>
@@ -92,19 +130,18 @@ export const Admin_Tai_Chinh: React.FC = () => {
           </div>
         </div>
 
-        {/* CONTENT CHÍNH */}
         <div className="admin-content fade-in">
-          {/* BỘ LỌC THỜI GIAN THEO CONTEXT CỦA DJANGO */}
+          {/* FILTER */}
           <div className="finance-filter-bar">
             <div className="filter-title">
-              <i className="fas fa-filter"></i> Bộ lọc báo cáo thời gian
+              <i className="fas fa-filter"></i>
+              Bộ lọc báo cáo thời gian
             </div>
+
             <div className="filter-controls">
               <select
                 value={selectedMonth}
-                onChange={(e) =>
-                  handleFilterChange(Number(e.target.value), selectedYear)
-                }
+                onChange={handleMonthChange}
                 className="custom-filter"
               >
                 {monthsOptions.map((m) => (
@@ -116,9 +153,7 @@ export const Admin_Tai_Chinh: React.FC = () => {
 
               <select
                 value={selectedYear}
-                onChange={(e) =>
-                  handleFilterChange(selectedMonth, Number(e.target.value))
-                }
+                onChange={handleYearChange}
                 className="custom-filter"
               >
                 {yearsOptions.map((y) => (
@@ -130,81 +165,49 @@ export const Admin_Tai_Chinh: React.FC = () => {
             </div>
           </div>
 
-          {/* 4 KHỐI THỐNG KÊ DOANH SỐ ĐÃ ĐƯỢC CHUẨN HÓA ĐỂ TRÁNH LỖI CSS BỊ ĐÈ */}
+          {/* STATS */}
           <div className="finance-stats-grid">
             <div className="finance-stat-card green">
-              <div className="stat-icon">
-                <i className="fas fa-coins"></i>
-              </div>
               <div className="stat-info">
-                <h3>{stats?.revenue_month || "0 VNĐ"}</h3>
-                <p>Doanh thu tháng này</p>
+                <h3>{stats.revenue_month}</h3>
+                <p>Doanh thu tháng</p>
               </div>
             </div>
 
             <div className="finance-stat-card orange">
-              <div className="stat-icon">
-                <i className="fas fa-arrow-circle-down"></i>
-              </div>
               <div className="stat-info">
-                <h3>{stats?.expense_month || "0 VNĐ"}</h3>
-                <p>Chi phí ước tính (60%)</p>
+                <h3>{stats.expense_month}</h3>
+                <p>Chi phí</p>
               </div>
             </div>
 
             <div className="finance-stat-card blue">
-              <div className="stat-icon">
-                <i className="fas fa-money-bill-wave"></i>
-              </div>
               <div className="stat-info">
-                <h3>{stats?.profit_month || "0 VNĐ"}</h3>
-                <p>Lợi nhuận ước tính (40%)</p>
+                <h3>{stats.profit_month}</h3>
+                <p>Lợi nhuận</p>
               </div>
             </div>
 
             <div className="finance-stat-card purple">
-              <div className="stat-icon">
-                <i className="fas fa-calendar-day"></i>
-              </div>
               <div className="stat-info">
-                <h3>{stats?.revenue_today || "0 VNĐ"}</h3>
+                <h3>{stats.revenue_today}</h3>
                 <p>Doanh thu hôm nay</p>
               </div>
             </div>
           </div>
 
-          {/* KHỐI TRỰC QUAN HÓA BIỂU ĐỒ DOANH THU 12 THÁNG */}
+          {/* CHART */}
           <div className="admin-section">
             <div className="admin-section-header">
-              <h2>
-                <i
-                  className="fas fa-chart-line"
-                  style={{ marginRight: "6px" }}
-                ></i>{" "}
-                Biến động dòng tiền năm {selectedYear} (Đơn vị: Tỷ VNĐ)
-              </h2>
+              <h2>Biểu đồ doanh thu năm {selectedYear}</h2>
             </div>
-            <div className="native-chart-container">
-              <div className="chart-legend">
-                <span className="legend-item">
-                  <span className="dot revenue"></span> Doanh thu
-                </span>
-                <span className="legend-item">
-                  <span className="dot expense"></span> Chi phí
-                </span>
-                <span className="legend-item">
-                  <span className="dot profit"></span> Lợi nhuận
-                </span>
-              </div>
-              <div className="chart-bars-scroll">
-                {chartData &&
-                chartData.revenue &&
-                chartData.revenue.length > 0 ? (
-                  chartData.revenue.map((revValue, idx) => {
-                    const expValue = chartData.expense?.[idx] || 0;
-                    const proValue = chartData.profit?.[idx] || 0;
 
-                    // Tìm giá trị lớn nhất trong mảng để định hình tỷ lệ chiều cao cột %
+            <div className="native-chart-container">
+              {chartData &&
+              chartData.revenue &&
+              chartData.revenue.length > 0 ? (
+                <div className="chart-bars-scroll">
+                  {chartData.revenue.map((rev, idx) => {
                     const maxVal = Math.max(...chartData.revenue, 1);
 
                     return (
@@ -213,44 +216,71 @@ export const Admin_Tai_Chinh: React.FC = () => {
                           <div
                             className="bar bar-revenue"
                             style={{
-                              height: `${(revValue / maxVal) * 120}px`,
+                              height: `${(rev / maxVal) * 120}px`,
                             }}
-                            title={`Doanh thu: ${revValue} tỷ`}
-                          ></div>
-                          <div
-                            className="bar bar-expense"
-                            style={{
-                              height: `${(expValue / maxVal) * 120}px`,
-                            }}
-                            title={`Chi phí: ${expValue} tỷ`}
-                          ></div>
-                          <div
-                            className="bar bar-profit"
-                            style={{
-                              height: `${(proValue / maxVal) * 120}px`,
-                            }}
-                            title={`Lợi nhuận: ${proValue} tỷ`}
                           ></div>
                         </div>
+
                         <span className="column-label">
-                          {chartData.labels?.[idx] || `T${idx + 1}`}
+                          {chartData.labels[idx]}
                         </span>
                       </div>
                     );
-                  })
-                ) : (
-                  <div
-                    style={{
-                      textAlign: "center",
-                      width: "100%",
-                      color: "#94a3b8",
-                      paddingBottom: "20px",
-                    }}
-                  >
-                    Không có dữ liệu biểu đồ cho năm này
-                  </div>
-                )}
-              </div>
+                  })}
+                </div>
+              ) : (
+                <div
+                  style={{
+                    textAlign: "center",
+                    padding: "40px",
+                  }}
+                >
+                  Không có dữ liệu biểu đồ
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* TOP PRODUCTS */}
+          <div className="admin-section">
+            <div className="admin-section-header">
+              <h2>Top sản phẩm bán chạy</h2>
+            </div>
+
+            <div className="table-container">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Sản phẩm</th>
+                    <th>Đã bán</th>
+                    <th>Doanh thu</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {topProducts.length > 0 ? (
+                    topProducts.map((p, index) => (
+                      <tr key={index}>
+                        <td>{p.name}</td>
+                        <td>{p.sold}</td>
+                        <td>{p.revenue}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td
+                        colSpan={3}
+                        style={{
+                          textAlign: "center",
+                          padding: 30,
+                        }}
+                      >
+                        Không có dữ liệu
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>

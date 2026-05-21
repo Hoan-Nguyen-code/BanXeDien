@@ -20,7 +20,6 @@ class User(AbstractUser):
 
     phone = models.CharField(max_length=15, blank=True)
     address = models.TextField(blank=True)
-
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
@@ -99,7 +98,7 @@ class Product(models.Model):
 # ==============================
 
 class Inventory(models.Model):
-    product = models.OneToOneField(Product, on_delete=models.CASCADE)
+    product = models.OneToOneField(Product, on_delete=models.CASCADE, related_name='inventory')
     stock_quantity = models.PositiveIntegerField(default=0)
     updated_at = models.DateTimeField(auto_now=True)
 

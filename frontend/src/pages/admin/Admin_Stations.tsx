@@ -1,15 +1,22 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import { Link } from "react-router-dom";
+
+import api from "../../services/api";
 
 import AdminSidebar from "../../components/AdminSidebar";
 
 import "../../assets/css/admin_stations.css";
 
-export const Admin_Stations: React.FC = () => {
-  const [stations, setStations] = useState<any[]>([]);
+import type {
+  ChargingStation,
+  StationStats,
+  AdminStationApiResponse,
+} from "../../assets/js/admin_stations";
 
-  const [stats, setStats] = useState({
+export const Admin_Stations: React.FC = () => {
+  const [stations, setStations] = useState<ChargingStation[]>([]);
+
+  const [stats, setStats] = useState<StationStats>({
     total: 0,
     active: 0,
     maintenance: 0,
@@ -22,8 +29,6 @@ export const Admin_Stations: React.FC = () => {
     has_next: false,
     has_previous: false,
     count: 0,
-    start_index: 0,
-    end_index: 0,
   });
 
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -38,17 +43,8 @@ export const Admin_Stations: React.FC = () => {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem("token");
-
-      const res = await axios.get(
-        `http://127.0.0.1:8000/api/admin/stations/?page=${page}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-
-          withCredentials: true,
-        },
+      const res = await api.get<AdminStationApiResponse>(
+        `admin/stations/?page=${page}`,
       );
 
       console.log("STATIONS API:", res.data);
@@ -71,12 +67,10 @@ export const Admin_Stations: React.FC = () => {
           has_next: false,
           has_previous: false,
           count: 0,
-          start_index: 0,
-          end_index: 0,
         },
       );
     } catch (err) {
-      console.error("Lỗi tải dữ liệu:", err);
+      console.error("Lỗi tải dữ liệu trạm sạc:", err);
     } finally {
       setLoading(false);
     }
@@ -98,16 +92,18 @@ export const Admin_Stations: React.FC = () => {
     <div className="admin-layout">
       <AdminSidebar active="tramsac" />
 
-      <div className="main-content">
+      <div className="admin-main-content">
         {/* NAVBAR */}
-        <div className="navbar">
-          <h1>
-            <i className="fas fa-charging-station"></i> Quản lý Trạm sạc
-          </h1>
+        <div className="admin-navbar">
+          <div className="admin-navbar-left">
+            <h1>
+              <i className="fas fa-charging-station"></i> Quản lý Trạm sạc
+            </h1>
+          </div>
         </div>
 
         {/* CONTENT */}
-        <div className="content fade-in">
+        <div className="admin-content fade-in">
           {/* LOADING */}
           {loading && (
             <div
@@ -168,11 +164,11 @@ export const Admin_Stations: React.FC = () => {
           </div>
 
           {/* TABLE */}
-          <div className="section">
-            <div className="section-header">
+          <div className="admin-section">
+            <div className="admin-section-header">
               <h2>Danh sách trạm sạc</h2>
 
-              <Link to="/admin/station/add" className="btn-primary">
+              <Link to="/admin/station/add" className="page-btn current">
                 <i className="fas fa-plus"></i> Thêm trạm sạc
               </Link>
             </div>
@@ -209,7 +205,7 @@ export const Admin_Stations: React.FC = () => {
 
                         <td>{s.charger_type}</td>
 
-                        <td>{s.power}</td>
+                        <td>{s.power_capacity}</td>
 
                         <td>{s.total_ports}</td>
 
@@ -217,32 +213,47 @@ export const Admin_Stations: React.FC = () => {
 
                         <td>
                           <span
-                            className={`status-badge ${String(
-                              s.status,
-                            ).toLowerCase()}`}
+                            className={`status-badge ${
+                              s.status === "ACTIVE"
+                                ? "completed"
+                                : s.status === "MAINTENANCE"
+                                  ? "orange"
+                                  : "cancelled"
+                            }`}
                           >
-                            {s.status}
+                            {s.status === "ACTIVE"
+                              ? "Hoạt động"
+                              : s.status === "MAINTENANCE"
+                                ? "Bảo trì"
+                                : "Ngừng hoạt động"}
                           </span>
                         </td>
 
                         <td>
-                          <Link
-                            to={`/admin/station/${s.id}`}
-                            className="btn-action view"
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: "8px",
+                            }}
                           >
-                            <i className="fas fa-eye"></i>
-                          </Link>
+                            <Link
+                              to={`/admin/station/${s.id}`}
+                              className="btn-action"
+                            >
+                              <i className="fas fa-eye"></i>
+                            </Link>
 
-                          <Link
-                            to={`/admin/station/edit/${s.id}`}
-                            className="btn-action edit"
-                          >
-                            <i className="fas fa-edit"></i>
-                          </Link>
+                            <Link
+                              to={`/admin/station/edit/${s.id}`}
+                              className="btn-action"
+                            >
+                              <i className="fas fa-edit"></i>
+                            </Link>
 
-                          <button className="btn-action delete">
-                            <i className="fas fa-trash"></i>
-                          </button>
+                            <button className="btn-action">
+                              <i className="fas fa-trash"></i>
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))
@@ -255,7 +266,7 @@ export const Admin_Stations: React.FC = () => {
                           padding: "40px",
                         }}
                       >
-                        Chưa có trạm sạc nào
+                        Không có dữ liệu trạm sạc
                       </td>
                     </tr>
                   )}
@@ -264,13 +275,9 @@ export const Admin_Stations: React.FC = () => {
             </div>
 
             {/* PAGINATION */}
-            <div className="pagination-footer">
+            <div className="pagination-list">
               <div className="pagination-info">
-                Hiển thị{" "}
-                <strong>
-                  {pagination.start_index} - {pagination.end_index}
-                </strong>{" "}
-                trong số <strong>{stats.total}</strong> trạm
+                Tổng số: <strong>{pagination.count}</strong> trạm
               </div>
 
               <div
@@ -288,7 +295,7 @@ export const Admin_Stations: React.FC = () => {
                 </button>
 
                 <span className="page-btn current">
-                  Trang {pagination.current_page}
+                  Trang {pagination.current_page} / {pagination.total_pages}
                 </span>
 
                 <button

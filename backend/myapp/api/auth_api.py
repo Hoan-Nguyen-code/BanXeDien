@@ -19,6 +19,8 @@ from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode
 
+from rest_framework_simplejwt.tokens import RefreshToken
+
 from myapp.models import User
 
 from myapp.serializers.auth_serializer import (

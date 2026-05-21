@@ -257,3 +257,27 @@
   font-weight: 700;
   color: #64748b;
 }
+
+.finance-stat-card.green {
+  background-color: #10b981;
+}
+.finance-stat-card.green .stat-info h3,
+.finance-stat-card.green .stat-info p {
+  color: #ffffff;
+}
+
+.finance-stat-card.orange {
+  background-color: #f59e0b;
+}
+.finance-stat-card.orange .stat-info h3,
+.finance-stat-card.orange .stat-info p {
+  color: #ffffff;
+}
+
+.finance-stat-card.blue {
+  background-color: #3b82f6;
+}
+.finance-stat-card.blue .stat-info h3,
+.finance-stat-card.blue .stat-info p {
+  color: #ffffff;
+}
