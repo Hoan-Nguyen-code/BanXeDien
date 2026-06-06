@@ -5,7 +5,7 @@
 Tên dự án: Website xe điện
 Loại dự án: Phần mềm mã nguồn mở
 Ngôn ngữ sử dụng: Python, JavaScript/TypeScript
-Framework chính: Django, ReactJS
+Framework chính: Django, React
 
 Tài liệu này trình bày các giấy phép phần mềm (licenses) và các thư viện mã nguồn mở được sử dụng trong quá trình phát triển hệ thống “Website xe điện”.
 
@@ -61,11 +61,11 @@ SOFTWARE.
 
 # 3. Quy định sử dụng
 
-* Người dùng được phép sử dụng source code cho mục đích học tập và nghiên cứu.
-* Có thể chỉnh sửa và phát triển thêm các chức năng mới từ hệ thống.
-* Khi phân phối lại source code cần giữ nguyên thông tin giấy phép gốc.
-* Không sử dụng dự án cho các mục đích vi phạm pháp luật.
-* Các thư viện và framework bên thứ ba phải tuân theo giấy phép riêng của từng công nghệ.
+- Người dùng được phép sử dụng source code cho mục đích học tập và nghiên cứu.
+- Có thể chỉnh sửa và phát triển thêm các chức năng mới từ hệ thống.
+- Khi phân phối lại source code cần giữ nguyên thông tin giấy phép gốc.
+- Không sử dụng dự án cho các mục đích vi phạm pháp luật.
+- Các thư viện và framework bên thứ ba phải tuân theo giấy phép riêng của từng công nghệ.
 
 ---
 
@@ -79,9 +79,9 @@ Các logo, hình ảnh hoặc dịch vụ của bên thứ ba được sử dụ
 
 # 5. Tài liệu tham khảo giấy phép
 
-* [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
-* [https://www.gnu.org/licenses/gpl-3.0.en.html](https://www.gnu.org/licenses/gpl-3.0.en.html)
-* [https://docs.djangoproject.com/](https://docs.djangoproject.com/)
-* [https://react.dev/](https://react.dev/)
-* [https://www.postgresql.org/about/licence/](https://www.postgresql.org/about/licence/)
-* [https://leafletjs.com/](https://leafletjs.com/)
+- [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT)
+- [https://www.gnu.org/licenses/gpl-3.0.en.html](https://www.gnu.org/licenses/gpl-3.0.en.html)
+- [https://docs.djangoproject.com/](https://docs.djangoproject.com/)
+- [https://react.dev/](https://react.dev/)
+- [https://www.postgresql.org/about/licence/](https://www.postgresql.org/about/licence/)
+- [https://leafletjs.com/](https://leafletjs.com/)
