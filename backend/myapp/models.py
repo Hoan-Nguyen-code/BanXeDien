@@ -105,7 +105,7 @@ class Inventory(models.Model):
     class Meta:
         constraints = [
             models.CheckConstraint(
-                condition=models.Q(stock_quantity__gte=0),
+                check=models.Q(stock_quantity__gte=0),
                 name="stock_non_negative"
             )
         ]

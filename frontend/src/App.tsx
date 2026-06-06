@@ -53,28 +53,7 @@ function App() {
 
         <Route path="/map" element={<Map />} />
 
-        <Route
-          path="/admin/orders"
-          element={
-            <Admin_orders
-              orders={[]}
-              stats={{
-                total: 0,
-                pending: 0,
-                confirmed: 0,
-                shipping: 0,
-              }}
-              pagination={{
-                current_page: 1,
-                total_pages: 1,
-                has_previous: false,
-                has_next: false,
-              }}
-              statusFilter=""
-              adminName="Admin"
-            />
-          }
-        />
+        <Route path="/admin/orders" element={<Admin_orders />} />
 
         {/* TUYẾN ĐƯỜNG QUẢN LÝ THÀNH VIÊN */}
         <Route path="/admin/users" element={<Admin_Users />} />

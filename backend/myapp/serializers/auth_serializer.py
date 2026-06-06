@@ -96,6 +96,8 @@ class RegisterSerializer(serializers.ModelSerializer):
             **validated_data
         )
 
+        return user
+
 class ForgetPasswordSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
