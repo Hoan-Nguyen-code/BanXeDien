@@ -46,14 +46,10 @@ export const Admin_Kho: React.FC = () => {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem("token");
-
       const response = await api.get<AdminKhoApiResponse>(
         `admin/products/?page=${page}`,
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          withCredentials: true,
         },
       );
 
@@ -93,17 +89,6 @@ export const Admin_Kho: React.FC = () => {
       return;
     }
 
-    // 2. Lấy token và kiểm tra xem nó có tồn tại không
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      console.error("Lỗi: Không tìm thấy token trong localStorage!");
-      alert(
-        "Bạn chưa đăng nhập hoặc token đã hết hạn. Vui lòng đăng nhập lại!",
-      );
-      return; // Dừng lại ở đây, không gửi request nữa
-    }
-
     try {
       const formData = {
         action: modalAction,
@@ -115,7 +100,6 @@ export const Admin_Kho: React.FC = () => {
       // 3. Gửi request với token đã được kiểm tra
       await api.post("admin/products/", formData, {
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         withCredentials: true,

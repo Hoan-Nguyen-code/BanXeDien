@@ -36,9 +36,6 @@ export default function Login() {
       // Lưu user
       localStorage.setItem("user", JSON.stringify(user));
 
-      // Lưu token JWT
-      localStorage.setItem("token", response.data.token);
-
       // ADMIN
       if (user.role === "ADMIN" || user.is_superuser) {
         window.location.href = "/admin/dashboard";
